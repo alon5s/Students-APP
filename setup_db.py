@@ -38,7 +38,7 @@ def create_tables():
             course_id INTEGER UNIQUE,
             FOREIGN KEY (student_id) REFERENCES students (id),
             FOREIGN KEY (course_id) REFERENCES courses (id)
-            UNIQUE (student_id, course_id)
+            UNIQUE (course_id)
         )
     """)
 
@@ -54,5 +54,6 @@ def create_fake_data(students_num=40, teachers_num=4):
         execute_query(f"INSERT INTO courses (name, teacher_id) VALUES ('{course_name}','{random.choice(teacher_ids)}')")
 
 
-# create_tables()
-# create_fake_data()
+if __name__=="__main__":
+    create_tables()
+    create_fake_data()
