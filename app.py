@@ -2,6 +2,13 @@ from flask import Flask,redirect,url_for,render_template
 app = Flask(__name__)
 from setup_db import execute_query
 
+@app.route('/')
+def home():
+    students = execute_query("SELECT * FROM students")
+    teachers = execute_query("SELECT * FROM teachers")
+    courses = execute_query("SELECT * FROM courses")
+    return render_template("index.html", students=students, teachers=teachers, courses=courses)
+
 @app.route('/register/<student_id>/<course_id>')
 def register(student_id, course_id):
         # This endpoint inserts a student into students_courses table so student_id 
