@@ -9,7 +9,7 @@ def home():
 @app.route('/course/add', methods=['GET','POST'])
 def add_course():
     if request.method == 'POST':
-        course_name = request.form['course']
+        course_name = request.form['course'].capitalize()
         teacher = request.form['teacher']
         description =  request.form['desc_']
         t_id = [ i[0] for i in execute_query(f"SELECT id FROM teachers WHERE name='{teacher}'") ]
@@ -21,11 +21,21 @@ def add_course():
         teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
         return render_template("add_course.html", teachers=teachers)
 
-
 @app.route('/course_list')
 def search():
     courses = execute_query("SELECT * FROM courses")
     return render_template("course_list.html", courses=courses)
+
+@app.route('/course/<course_id>')
+def show_course(course_id):
+    course_name = [ c[0] for c in execute_query(f"SELECT name FROM courses WHERE id={course_id}") ]
+    message = f"Welcome To Course {course_name[0]}".title()
+    student_ids = [ s_id[0] for s_id in execute_query(f"SELECT student_id FROM students_courses WHERE course_id={course_id}") ]
+    students_names=[]
+    for student_id in student_ids:
+        student_name = [ s_name[0] for s_name in execute_query(f"SELECT name FROM students WHERE id={student_id}") ]
+        students_names.append(student_name[0])
+    return render_template("show_course.html", course_name=course_name, message=message, students_names=students_names)
 
 @app.route('/lists')
 def lists():
@@ -33,6 +43,8 @@ def lists():
     teachers = execute_query("SELECT * FROM teachers")
     courses = execute_query("SELECT * FROM courses")
     return render_template("lists.html", students=students, teachers=teachers, courses=courses)
+
+
 
 @app.route('/register/<student_id>/<course_id>')
 def register(student_id, course_id):
