@@ -1,13 +1,38 @@
-from flask import Flask,redirect,url_for,render_template
+from flask import Flask,request,redirect,url_for,render_template
 app = Flask(__name__)
 from setup_db import execute_query
 
 @app.route('/')
 def home():
+    return render_template("index.html")
+
+@app.route('/course/add', methods=['GET','POST'])
+def add_course():
+    if request.method == 'POST':
+        course_name = request.form['course']
+        teacher = request.form['teacher']
+        description =  request.form['desc_']
+        t_id = [ i[0] for i in execute_query(f"SELECT id FROM teachers WHERE name='{teacher}'") ]
+        execute_query(f"INSERT INTO courses VALUES(NULL,'{course_name}','{description}','{t_id[0]}')")
+        message = "Course have been added"
+        teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
+        return render_template("add_course.html", message=message, teachers=teachers)
+    else:
+        teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
+        return render_template("add_course.html", teachers=teachers)
+
+
+@app.route('/course_list')
+def search():
+    courses = execute_query("SELECT * FROM courses")
+    return render_template("course_list.html", courses=courses)
+
+@app.route('/lists')
+def lists():
     students = execute_query("SELECT * FROM students")
     teachers = execute_query("SELECT * FROM teachers")
     courses = execute_query("SELECT * FROM courses")
-    return render_template("index.html", students=students, teachers=teachers, courses=courses)
+    return render_template("lists.html", students=students, teachers=teachers, courses=courses)
 
 @app.route('/register/<student_id>/<course_id>')
 def register(student_id, course_id):

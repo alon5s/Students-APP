@@ -54,6 +54,8 @@ def create_fake_data(students_num=40, teachers_num=4):
         execute_query(f"INSERT INTO courses (name, teacher_id) VALUES ('{course_name}','{random.choice(teacher_ids)}')")
 
 
-if __name__=="__main__":
-    create_tables()
-    create_fake_data()
+# if __name__=="__main__":
+#     create_tables()
+#     create_fake_data()
+
+
