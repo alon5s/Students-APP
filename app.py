@@ -29,13 +29,15 @@ def search():
 @app.route('/course/<course_id>')
 def show_course(course_id):
     course_name = [ c[0] for c in execute_query(f"SELECT name FROM courses WHERE id={course_id}") ]
+    teacher_id = [ t_id[0] for t_id in execute_query(f"SELECT teacher_id FROM courses WHERE id={course_id}") ]
+    teacher_name = [ t_name[0] for t_name in execute_query(f"SELECT name FROM teachers WHERE id={teacher_id[0]}")]
     message = f"Welcome To Course {course_name[0]}".title()
     student_ids = [ s_id[0] for s_id in execute_query(f"SELECT student_id FROM students_courses WHERE course_id={course_id}") ]
     students_names=[]
     for student_id in student_ids:
         student_name = [ s_name[0] for s_name in execute_query(f"SELECT name FROM students WHERE id={student_id}") ]
         students_names.append(student_name[0])
-    return render_template("show_course.html", course_name=course_name, message=message, students_names=students_names)
+    return render_template("show_course.html", teacher_name=teacher_name, course_name=course_name, message=message, students_names=students_names)
 
 @app.route('/lists')
 def lists():
