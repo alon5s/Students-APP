@@ -1,10 +1,45 @@
-from flask import Flask,request,redirect,url_for,render_template
+from flask import Flask,session,request,redirect,url_for,render_template
 app = Flask(__name__)
 from setup_db import execute_query
 
-@app.route('/')
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+
+@app.route('/', methods=['GET','POST'])
 def home():
-    return render_template("index.html")
+    if 'email' in session:
+        str = f'Logged in as {session["email"]}'
+        return render_template("index.html", str=str)
+    else:
+        str = 'You are not logged in'
+        return render_template("index.html", str=str)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method=='GET':
+        return render_template("login.html")
+    if request.method=='POST':
+        email = request.form["email"]
+        password = request.form["password"]
+        details = execute_query(f"SELECT email,password FROM users WHERE email={email} AND password={password}")
+        print(details)
+    return redirect(url_for('home'))
+
+@app.route('/addstudent', methods=['GET', 'POST'])
+def add_student():
+    if request.method == 'GET':
+        return render_template("add_student.html")
+    if request.method == 'POST':
+        name = request.form["name"].title()
+        email = request.form["email"]
+        execute_query(f"INSERT INTO students VALUES(NULL,'{name}','{email}')")
+        message = f"{name} have been added"
+        return render_template("add_student.html", message=message)
+        
+
+@app.route('/newsletter')
+def method_name():
+    pass
 
 @app.route('/course/add', methods=['GET','POST'])
 def add_course():
@@ -28,23 +63,16 @@ def search():
 
 @app.route('/course/<course_id>')
 def show_course(course_id):
-    course_name = [ c[0] for c in execute_query(f"SELECT name FROM courses WHERE id={course_id}") ]
-    teacher_id = [ t_id[0] for t_id in execute_query(f"SELECT teacher_id FROM courses WHERE id={course_id}") ]
+    c_name = [ c_id[0] for c_id in execute_query(f"SELECT name FROM courses WHERE id={course_id}") ]
+    teacher_id = [ t_id[0] for t_id in execute_query(f"SELECT teacher_id FROM courses WHERE id={course_id[0]}") ]
     teacher_name = [ t_name[0] for t_name in execute_query(f"SELECT name FROM teachers WHERE id={teacher_id[0]}")]
-    message = f"Welcome To Course {course_name[0]}".title()
+    message = f"Welcome To Course {c_name[0]}".title()
     student_ids = [ s_id[0] for s_id in execute_query(f"SELECT student_id FROM students_courses WHERE course_id={course_id}") ]
     students_names=[]
     for student_id in student_ids:
         student_name = [ s_name[0] for s_name in execute_query(f"SELECT name FROM students WHERE id={student_id}") ]
         students_names.append(student_name[0])
-    return render_template("show_course.html", teacher_name=teacher_name, course_name=course_name, message=message, students_names=students_names)
-
-@app.route('/lists')
-def lists():
-    students = execute_query("SELECT * FROM students")
-    teachers = execute_query("SELECT * FROM teachers")
-    courses = execute_query("SELECT * FROM courses")
-    return render_template("lists.html", students=students, teachers=teachers, courses=courses)
+    return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students_names=students_names)
 
 
 
@@ -54,6 +82,9 @@ def register(student_id, course_id):
         # is registered to course_id. Then show all courses for this student.
     execute_query(f"INSERT INTO students_courses VALUES (NULL, '{student_id}', '{course_id}')")
     return redirect(url_for('registrations', student_id=student_id))
+
+
+
 
 @app.route('/registrations/<student_id>')
 def registrations(student_id):
