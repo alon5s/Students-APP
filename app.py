@@ -21,8 +21,14 @@ def login():
     if request.method=='POST':
         email = request.form["email"]
         password = request.form["password"]
-        details = execute_query(f"SELECT email,password FROM users WHERE email={email} AND password={password}")
-        print(details)
+        details = execute_query(f"SELECT email,password FROM users WHERE email='{email}' AND password='{password}'")
+        d1,d2 = details[0]
+        session['email'] = d1
+    return redirect(url_for('home'))
+
+@app.route('/logout')
+def logout():
+    session.pop('email', None)
     return redirect(url_for('home'))
 
 

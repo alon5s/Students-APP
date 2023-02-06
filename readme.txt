@@ -1,10 +1,11 @@
 DB:
 
-3 tables:
+4 tables:
 
 Teachers
 Courses
 Students
+Users
 
 Relationships:
 
