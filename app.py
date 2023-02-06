@@ -25,6 +25,7 @@ def login():
         print(details)
     return redirect(url_for('home'))
 
+
 @app.route('/addstudent', methods=['GET', 'POST'])
 def add_student():
     if request.method == 'GET':
@@ -36,10 +37,6 @@ def add_student():
         message = f"{name} have been added"
         return render_template("add_student.html", message=message)
         
-
-@app.route('/newsletter')
-def method_name():
-    pass
 
 @app.route('/course/add', methods=['GET','POST'])
 def add_course():
@@ -56,10 +53,19 @@ def add_course():
         teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
         return render_template("add_course.html", teachers=teachers)
 
-@app.route('/course_list')
+@app.route('/course_list', methods=['GET','POST'])
 def search():
-    courses = execute_query("SELECT * FROM courses")
-    return render_template("course_list.html", courses=courses)
+    if request.method == 'GET':
+        courses = execute_query("SELECT * FROM courses")
+        return render_template("course_list.html", courses=courses)
+    if request.method == 'POST':
+        student_name = request.form["s_name"].title()
+        course_name = request.form["c_name"].title()
+        student_id = [ s_id[0] for s_id in execute_query(f"SELECT id FROM students WHERE name='{student_name}'")]
+        course_id = [ c_id[0] for c_id in execute_query(f"SELECT id FROM courses WHERE name='{course_name}'")]
+        execute_query(f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
+        return redirect(url_for('search'))
+
 
 @app.route('/course/<course_id>')
 def show_course(course_id):
@@ -76,14 +82,9 @@ def show_course(course_id):
 
 
 
-@app.route('/register/<student_id>/<course_id>')
-def register(student_id, course_id):
-        # This endpoint inserts a student into students_courses table so student_id 
-        # is registered to course_id. Then show all courses for this student.
-    execute_query(f"INSERT INTO students_courses VALUES (NULL, '{student_id}', '{course_id}')")
-    return redirect(url_for('registrations', student_id=student_id))
-
-
+@app.route('/newsletter')
+def method_name():
+    pass
 
 
 @app.route('/registrations/<student_id>')
@@ -97,3 +98,14 @@ def registrations(student_id):
         course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
     student_name=execute_query(f"SELECT name FROM students WHERE id={student_id}")
     return render_template("registrations.html", student_name=student_name, course_names=course_names)
+
+
+
+
+
+# @app.route('/register/<student_id>/<course_id>')
+# def register(student_id, course_id):
+#     # This endpoint inserts a student into students_courses table so student_id 
+#     # is registered to course_id. Then show all courses for this student.
+#     execute_query(f"INSERT INTO students_courses VALUES (NULL, '{student_id}', '{course_id}')")
+#     return redirect(url_for('registrations', student_id=student_id))

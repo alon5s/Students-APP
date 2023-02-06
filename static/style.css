@@ -43,3 +43,7 @@ fieldset{
     font-size: 3vh;
     text-align: center;
 }
+
+.form-container{
+    text-align: left;
+}
