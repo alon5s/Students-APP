@@ -1,6 +1,8 @@
 from flask import Flask,session,request,redirect,url_for,render_template
 app = Flask(__name__)
 from setup_db import execute_query
+from sqlite3 import IntegrityError
+from collections import namedtuple
 
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
@@ -44,33 +46,28 @@ def add_student():
         return render_template("add_student.html", message=message)
         
 
-@app.route('/course/add', methods=['GET','POST'])
-def add_course():
-    if request.method == 'POST':
-        course_name = request.form['course'].capitalize()
-        teacher = request.form['teacher']
-        description =  request.form['desc_']
-        t_id = [ i[0] for i in execute_query(f"SELECT id FROM teachers WHERE name='{teacher}'") ]
-        execute_query(f"INSERT INTO courses VALUES(NULL,'{course_name}','{description}','{t_id[0]}')")
-        message = "Course have been added"
-        teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
-        return render_template("add_course.html", message=message, teachers=teachers)
-    else:
-        teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
-        return render_template("add_course.html", teachers=teachers)
-
 @app.route('/course_list', methods=['GET','POST'])
 def search():
     if request.method == 'GET':
+        teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
         courses = execute_query("SELECT * FROM courses")
-        return render_template("course_list.html", courses=courses)
+        return render_template("course_list.html", courses=courses, teachers=teachers)
     if request.method == 'POST':
+        # first section: adding course
+        add_course_name = request.form['course'].capitalize()
+        teacher = request.form['teacher']
+        description =  request.form['desc_']
+        t_id = [ i[0] for i in execute_query(f"SELECT id FROM teachers WHERE name='{teacher}'") ]
+        execute_query(f"INSERT INTO courses VALUES(NULL,'{add_course_name}','{description}','{t_id[0]}')")
+        message = f"Course {add_course_name} have been added"
+        teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
+        # second section: associate a student with a course
         student_name = request.form["s_name"].title()
         course_name = request.form["c_name"].title()
         student_id = [ s_id[0] for s_id in execute_query(f"SELECT id FROM students WHERE name='{student_name}'")]
         course_id = [ c_id[0] for c_id in execute_query(f"SELECT id FROM courses WHERE name='{course_name}'")]
         execute_query(f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
-        return redirect(url_for('search'))
+        return render_template("course_list.html", courses=courses, message=message, teachers=teachers)
 
 
 @app.route('/course/<course_id>')
@@ -93,18 +90,42 @@ def method_name():
     pass
 
 
+@app.route('/regsiter/<student_id>/<course_id>')
+def register(student_id, course_id):
+    try:
+        execute_query(f"INSERT INTO students_courses (student_id, course_id) VALUES ('{student_id}', '{course_id}')")
+    except IntegrityError:
+        return f"{student_id} is already registered to {course_id}"
+    return redirect(url_for('regitrations', student_id=student_id)) 
+
+
 @app.route('/registrations/<student_id>')
 def registrations(student_id):
         # 1. Get course IDs for this student using student_courses
         # 2. Get course names using course IDs
-    course_ids=execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
-    clean_ids=[ c[0] for c in course_ids]
-    course_names=[]
-    for i in clean_ids:
-        course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
-    student_name=execute_query(f"SELECT name FROM students WHERE id={student_id}")
-    return render_template("registrations.html", student_name=student_name, course_names=course_names)
-
+    # course_ids=execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
+    # clean_ids=[ c[0] for c in course_ids]
+    # course_names=[]
+    # for i in clean_ids:
+    #     course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
+    # student_name=execute_query(f"SELECT name FROM students WHERE id={student_id}")
+    # return render_template("registrations.html", student_name=student_name, course_names=course_names)
+    course_names=execute_query(f"""
+        SELECT courses.name, courses.teacher_id FROM courses
+        JOIN students_courses on students_courses.course_id=courses.id
+        WHERE students_courses.student_id={student_id}
+    """)
+    courses=[]
+    # the challenge is to do it in one line !
+    for course_tuple in course_names:
+        course=namedtuple("Course", ["name","teacher"])
+        course.name=course_tuple[0]
+        course.teacher=course_tuple[1]
+        courses.append(course)
+    # course=namedtupe("Course", ["name","teacher"])
+    # course.name="alon"
+    # course.teacher="tal"
+    return render_template("registrations.html", courses=courses)
 
 
 
