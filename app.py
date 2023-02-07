@@ -39,10 +39,14 @@ def add_student():
     if request.method == 'GET':
         return render_template("add_student.html")
     if request.method == 'POST':
-        name = request.form["name"].title()
-        email = request.form["email"]
-        execute_query(f"INSERT INTO students VALUES(NULL,'{name}','{email}')")
-        message = f"{name} have been added"
+        student_name = request.form["s_name"].title()
+        course_name = request.form["c_name"].title()
+        student_email = request.form["s_email"]
+        execute_query(f"INSERT INTO students VALUES(NULL,'{student_name}','{student_email}')")
+        student_id = [ s_id[0] for s_id in execute_query(f"SELECT id FROM students WHERE name='{student_name}'")]
+        course_id = [ c_id[0] for c_id in execute_query(f"SELECT id FROM courses WHERE name='{course_name}'")]
+        execute_query(f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
+        message = f"{student_name} has been added & associated"
         return render_template("add_student.html", message=message)
         
 
@@ -60,14 +64,8 @@ def search():
         t_id = [ i[0] for i in execute_query(f"SELECT id FROM teachers WHERE name='{teacher}'") ]
         execute_query(f"INSERT INTO courses VALUES(NULL,'{add_course_name}','{description}','{t_id[0]}')")
         message = f"Course {add_course_name} have been added"
-        teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]
-        # second section: associate a student with a course
-        student_name = request.form["s_name"].title()
-        course_name = request.form["c_name"].title()
-        student_id = [ s_id[0] for s_id in execute_query(f"SELECT id FROM students WHERE name='{student_name}'")]
-        course_id = [ c_id[0] for c_id in execute_query(f"SELECT id FROM courses WHERE name='{course_name}'")]
-        execute_query(f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
-        return render_template("course_list.html", courses=courses, message=message, teachers=teachers)
+        teachers = [ t[0] for t in execute_query("SELECT name FROM teachers") ]       
+        return redirect(url_for('search'))
 
 
 @app.route('/course/<course_id>')
