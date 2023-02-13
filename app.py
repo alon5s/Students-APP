@@ -22,8 +22,6 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET':
-        return render_template("login.html")
     if request.method == 'POST':
         email = request.form["email"]
         password = request.form["password"]
@@ -31,7 +29,9 @@ def login():
             f"SELECT email,password FROM users WHERE email='{email}' AND password='{password}'")
         d1, d2 = details[0]
         session['email'] = d1
-    return redirect(url_for('home'))
+        return redirect(url_for('home'))
+    else:
+        return render_template("login.html")
 
 
 @app.route('/logout')
@@ -42,8 +42,6 @@ def logout():
 
 @app.route('/student/add', methods=['GET', 'POST'])
 def add_student():
-    if request.method == 'GET':
-        return render_template("add_student.html")
     if request.method == 'POST':
         student_name = request.form["s_name"].title()
         course_name = request.form["c_name"]
@@ -58,14 +56,12 @@ def add_student():
             f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
         message = f"{student_name} has been added & associated"
         return render_template("add_student.html", message=message)
+    else:
+        return render_template("add_student.html")
 
 
 @app.route('/course_list', methods=['GET', 'POST'])
 def search():
-    if request.method == 'GET':
-        teachers = [t[0] for t in execute_query("SELECT name FROM teachers")]
-        courses = execute_query("SELECT * FROM courses")
-        return render_template("course_list.html", courses=courses, teachers=teachers)
     if request.method == 'POST':
         # first section: adding course
         add_course_name = request.form['course'].capitalize()
@@ -78,6 +74,10 @@ def search():
         message = f"Course {add_course_name} have been added"
         teachers = [t[0] for t in execute_query("SELECT name FROM teachers")]
         return redirect(url_for('search'))
+    else:
+        teachers = [t[0] for t in execute_query("SELECT name FROM teachers")]
+        courses = execute_query("SELECT * FROM courses")
+        return render_template("course_list.html", courses=courses, teachers=teachers)
 
 
 @app.route('/course/<course_id>')
@@ -91,11 +91,8 @@ def show_course(course_id):
     message = f"Welcome To Course {c_name[0]}".title()
     student_ids = [s_id[0] for s_id in execute_query(
         f"SELECT student_id FROM students_courses WHERE course_id={course_id}")]
-    students_names = []
-    for student_id in student_ids:
-        student_name = [s_name[0] for s_name in execute_query(
-            f"SELECT name FROM students WHERE id={student_id}")]
-        students_names.append(student_name[0])
+    students_names = [[s_name[0] for s_name in execute_query(
+        f"SELECT name FROM students WHERE id={student_id}")] for student_id in student_ids]
     return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students_names=students_names)
 
 
