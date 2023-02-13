@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>{{ c_name[0] }}</title>
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+    <h1>{{ message }}</h1>
+    <h2 class="headline">Teacher: {{ teacher_name[0] }}</h2>
+    <h2 class="headline">Students List:</h2>
+    {% for student_name in students_names %}
+    {{ student_name }}<br>
+    {% endfor %}
+
+    
+</body>
+
+</html>

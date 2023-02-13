@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Add Course</title>
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+    <br><br>
+    <form action="" method="post">
+        <fieldset>
+            <legend>Add & associate a student with a course</legend>
+            <br>
+            <input type="text" placeholder="Student Name.." name="s_name" required autofocus>
+            <br><br>
+            <input type="email" placeholder="Enter email.." name="s_email" required autofocus>
+            <br><br>
+            <input type="text" placeholder="Course name.." name="c_name">
+            <br><br>
+            <input type="submit" value="Submit">
+        </fieldset>
+    </form>
+    <div>{{ message }}</div>
+</body>
+
+</html>
