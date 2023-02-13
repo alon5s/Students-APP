@@ -12,12 +12,13 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    courses = [c_name[0] for c_name in execute_query("SELECT name FROM courses")]
     if 'email' in session:
         str = f'Logged in as {session["email"]}'
-        return render_template("index.html", str=str)
+        return render_template("index.html", str=str, courses=courses)
     else:
         str = 'You are not logged in'
-        return render_template("index.html", str=str)
+        return render_template("index.html", str=str, courses=courses)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -85,7 +86,7 @@ def show_course(course_id):
     c_name = [c_id[0] for c_id in execute_query(
         f"SELECT name FROM courses WHERE id={course_id}")]
     teacher_id = [t_id[0] for t_id in execute_query(
-        f"SELECT teacher_id FROM courses WHERE id={course_id[0]}")]
+        f"SELECT teacher_id FROM courses WHERE id={course_id}")]
     teacher_name = [t_name[0] for t_name in execute_query(
         f"SELECT name FROM teachers WHERE id={teacher_id[0]}")]
     message = f"Welcome To Course {c_name[0]}".title()
@@ -94,11 +95,6 @@ def show_course(course_id):
     students_names = [[s_name[0] for s_name in execute_query(
         f"SELECT name FROM students WHERE id={student_id}")] for student_id in student_ids]
     return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students_names=students_names)
-
-
-@app.route('/newsletter')
-def method_name():
-    pass
 
 
 @app.route('/regsiter/<student_id>/<course_id>')

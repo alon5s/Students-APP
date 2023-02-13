@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,16 +8,25 @@
     <link rel="stylesheet" href="/static/style.css">
     <title>Home</title>
 </head>
-<body>
+
+<body class="home">
     {% include 'navbar.html' %}
-    <div>{{ str }}</div>
+    <br><br>
+    
+    <div class="login-button-form">
+        <div>{{ str }}</div>
+        <form action="/login" method="get">
+            <input type="submit" value="Login">
+        </form>
+    </div>
     <br>
-    <form action="/login" method="get">
-        <input type="submit" value="Login">
-    </form>
-    <br>
-    <form action="/details" method="post">
-        <input type="submit" value="Details">
-    </form>
+    <div class="courses">
+        <h2>New Courses At Our Institution</h2>
+        {% for course in courses[-2:] %}
+        <div class="course">{{ course }}</div>
+        <br>
+        {% endfor %}
+    </div>
 </body>
+
 </html>

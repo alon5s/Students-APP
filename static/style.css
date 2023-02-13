@@ -1,15 +1,16 @@
-.topnav{
+.topnav {
     border-bottom: 2px solid black;
     width: 100%;
+    background-color: gray;
     display: inline-block;
 }
 
-.topnav a{
+.topnav a {
     padding-left: 10px;
     padding-right: 10px;
 }
 
-.topnav a:hover{
+.topnav a:hover {
     background-color: grey;
     border-radius: 10px;
     color: white;
@@ -22,28 +23,34 @@
     padding-top: 2px;
 }
 
-legend{
+legend {
     font-weight: bolder;
     text-decoration: underline;
     font-size: 3vh;
 }
 
-fieldset{
-}
-
-.courses{
+.courses {
     text-align: center;
 }
 
-.headline{
-    text-decoration: underline;
-}
-
-.course{
+.course {
     font-size: 3vh;
     text-align: center;
 }
 
-.form-container{
+.login-button-form {
+    text-align: right;
+}
+
+.headline {
+    text-decoration: underline;
+}
+
+.form-container {
     text-align: left;
+}
+
+.home {
+    background-image: url(/static/images/institute.jpg);
+    width: 99%;
 }
