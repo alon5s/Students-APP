@@ -1,5 +1,5 @@
 import json
-from flask import Flask, session, request, redirect, url_for, render_template
+from flask import Flask, session, request, redirect, url_for, render_template, abort
 from setup_db import execute_query
 from sqlite3 import IntegrityError
 from collections import namedtuple
@@ -9,30 +9,49 @@ app = Flask(__name__)
 
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
+authorized_paths = ["register", "add", "update"]
+
+
+@app.before_request
+def auth():
+    if "role" not in session.keys():
+        session["role"] = "anonymous"
+        session["email"] = "anonymous@anon.com"
+    if session["role"] != 'admin':
+        if "register" in request.full_path:
+            return abort(403)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     courses = [c_name[0] for c_name in execute_query("SELECT name FROM courses")]
     if 'email' in session:
-        str = f'Logged in as {session["email"]}'
+        str = f'Logged in as {session["role"]}'
         return render_template("index.html", str=str, courses=courses)
     else:
         str = 'You are not logged in'
         return render_template("index.html", str=str, courses=courses)
 
 
+def authenticate(email, password):
+    role = execute_query(f"SELECT role FROM users WHERE email='{email}' AND password='{password}'")
+    if role == []:
+        return None
+    else:
+        return role[0][0]
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form["email"]
-        password = request.form["password"]
-        details = execute_query(
-            f"SELECT email,password FROM users WHERE email='{email}' AND password='{password}'")
-        d1, d2 = details[0]
-        session['email'] = d1
-        return redirect(url_for('home'))
-    else:
-        return render_template("login.html")
+        role = authenticate(request.form["email"], request.form["password"])
+        if role is None:
+            return abort(403)
+        else:
+            session["role"] = role
+            session["email"] = request.form["email"]
+        return redirect(url_for("home"))
+    return render_template("login.html")
 
 
 @app.route('/logout')
@@ -99,14 +118,17 @@ def show_course(course_id):
     return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students_names=students_names)
 
 
-@app.route('/regsiter/<student_id>/<course_id>')
+@app.route('/register/<student_id>/<course_id>')
 def register(student_id, course_id):
+    # if session.get("role", "anonymous") == 'admin':
     try:
         execute_query(
             f"INSERT INTO students_courses (student_id, course_id) VALUES ('{student_id}', '{course_id}')")
     except IntegrityError:
         return f"{student_id} is already registered to {course_id}"
     return redirect(url_for('registrations', student_id=student_id))
+    # else:
+    #     return abort(403)
 
 
 @app.route('/registrations/<student_id>')

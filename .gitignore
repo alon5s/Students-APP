@@ -3,3 +3,4 @@ students.db
 .vscode/settings.json
 *.pyc
 *.flake8
+comments.txt
