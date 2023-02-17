@@ -41,8 +41,8 @@ def logout():
     return redirect(url_for('home'))
 
 
-@app.route('/student/add', methods=['GET', 'POST'])
-def add_student():
+@app.route('/students', methods=['GET', 'POST'])
+def students():
     if request.method == 'POST':
         student_name = request.form["s_name"].title()
         course_name = request.form["c_name"]
@@ -56,13 +56,15 @@ def add_student():
         execute_query(
             f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
         message = f"{student_name} has been added & associated"
-        return render_template("add_student.html", message=message)
+        students = execute_query("SELECT * FROM students")
+        return render_template("students.html", message=message, students=students)
     else:
-        return render_template("add_student.html")
+        students = execute_query("SELECT * FROM students")
+        return render_template("students.html", students=students)
 
 
-@app.route('/course_list', methods=['GET', 'POST'])
-def search():
+@app.route('/courses', methods=['GET', 'POST'])
+def courses():
     if request.method == 'POST':
         # first section: adding course
         add_course_name = request.form['course']
@@ -74,11 +76,11 @@ def search():
             f"INSERT INTO courses VALUES(NULL,'{add_course_name}','{description}','{t_id[0]}')")
         message = f"Course {add_course_name} have been added"
         teachers = [t[0] for t in execute_query("SELECT name FROM teachers")]
-        return redirect(url_for('search'))
+        return redirect(url_for('courses'))
     else:
         teachers = [t[0] for t in execute_query("SELECT name FROM teachers")]
         courses = execute_query("SELECT * FROM courses")
-        return render_template("course_list.html", courses=courses, teachers=teachers)
+        return render_template("courses.html", courses=courses, teachers=teachers)
 
 
 @app.route('/course/<course_id>')

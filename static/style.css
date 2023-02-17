@@ -29,6 +29,10 @@ legend {
     font-size: 3vh;
 }
 
+fieldset{
+    width: 20%;
+}
+
 .courses {
     text-align: center;
 }
