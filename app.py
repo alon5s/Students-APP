@@ -65,7 +65,7 @@ def add_student():
 def search():
     if request.method == 'POST':
         # first section: adding course
-        add_course_name = request.form['course'].capitalize()
+        add_course_name = request.form['course']
         teacher = request.form['teacher']
         description = request.form['desc_']
         t_id = [i[0] for i in execute_query(

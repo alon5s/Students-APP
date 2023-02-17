@@ -20,6 +20,7 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS courses (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
+            description TEXT,
             teacher_id TEXT NOT NULL,
             FOREIGN KEY (teacher_id) REFERENCES teachers (id)
         )
@@ -55,13 +56,11 @@ def create_fake_data(students_num=40, teachers_num=4):
         execute_query(f"INSERT INTO students (name,email) VALUES ('{fake.name()}','{fake.email()}')")
     for teacher in range(teachers_num):
         execute_query(f"INSERT INTO teachers (name,email) VALUES ('{fake.name()}','{fake.email()}')")
-    courses=['python','java','html','css','javascript']
+    courses=['python','javascript']
     for course_name in courses:
         teacher_ids = [ tup[0] for tup in execute_query("SELECT id FROM teachers") ]
         execute_query(f"INSERT INTO courses (name, teacher_id) VALUES ('{course_name}','{random.choice(teacher_ids)}')")
 
-#if __name__=="__main__":
-#   create_tables()
-#   create_fake_data()
-
-
+if __name__=="__main__":
+    create_tables()
+    create_fake_data()
