@@ -1,19 +1,22 @@
 .topnav {
-    border-bottom: 2px solid black;
     width: 100%;
-    background-color: gray;
     display: inline-block;
+}
+
+body {
+    background-color: rgb(64, 64, 64);
+    color: white;
+    font-family: cursive;
 }
 
 .topnav a {
     padding-left: 10px;
     padding-right: 10px;
+    color: white;
 }
 
 .topnav a:hover {
-    background-color: grey;
-    border-radius: 10px;
-    color: white;
+    color: rgb(137, 137, 137);
 }
 
 .topnav form {
@@ -29,7 +32,7 @@ legend {
     font-size: 3vh;
 }
 
-fieldset{
+fieldset {
     width: 20%;
 }
 
@@ -43,7 +46,17 @@ fieldset{
 }
 
 .login-button-form {
-    text-align: right;
+    text-align: left;
+}
+
+.login-form{
+    display:flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.fieldset-form{
+    text-align: center;
 }
 
 .headline {
@@ -57,4 +70,28 @@ fieldset{
 .home {
     background-image: url(/static/images/institute.jpg);
     width: 99%;
+    background-repeat: no-repeat;
+    background-size: 100% 700px;
+}
+
+.home-course {
+    text-align: left;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.student, .course_style {
+    color: white;
+}
+
+.student:hover{
+    color: rgb(137, 137, 137);
+}
+
+table{
+    position: fixed;
 }
