@@ -12,23 +12,24 @@
 <body>
     {% include 'navbar.html' %}
     <div class="courses">
-        <h1 class="headline">Courses List:</h1>
+        <h1 class="headline">Courses:</h1>
         {% for course in courses %}
         <div class="course">
-            <a href="/course/{{course[0]}}">{{ course[1] }}</a>
+            <a class="course_style" href="/course/{{course[0]}}">{{ course[1] }}</a>
             <br><br>
             {% endfor %}
         </div>
     </div>
 
     <div class="form-container">
-        <form action="" method="post">
+        <form class="fieldset-form" action="" method="post">
             <fieldset>
                 <legend>Add Course:</legend>
                 <br>
                 <input type="text" placeholder="Course Name.." name="course">
                 <br><br>
                 <label for="teacher">Choose a Teacher:</label>
+                <br>
                 <select name="teacher">
                     <option></option>
                     {% for teacher in teachers %}
