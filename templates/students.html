@@ -12,9 +12,9 @@
 
 <body>
     {% include 'navbar.html' %}
-    <br>
-    <br>
-    <input type="text" id="search" placeholder="Search By Name/Email...">
+    <br><br>
+    <input class="search-student" type="text" id="search" placeholder="Search By Name/Email...">
+    <br><br>
     <div class="container">
         <div class="students">
             <h1 class="headline">Students:</h1>
@@ -25,34 +25,34 @@
                 </tr>
                 {% for student in students %}
                 <tr>
-                    <td><a class="student" href="/registrations/{{student[0]}}">{{ student[1] }}</a></td>
+                    <td><a class="student" href="/student/{{student[0]}}">{{ student[1] }}</a></td>
                     <td>{{ student[2] }}</td>
                 </tr>
                 {% endfor %}
             </table>
         </div>
-        <form class="fieldset-form" action="" method="post">
+        <form class="fieldset-form1" action="" method="post">
             <fieldset>
                 <legend>Add a student</legend>
                 <br>
-                <input type="text" placeholder="Student Name.." name="s_name" required>
+                <input class="fill-press" type="text" placeholder="Student Name.." name="s_name" required>
                 <br><br>
-                <input type="email" placeholder="Enter email.." name="s_email" required>
+                <input class="fill-press" type="email" placeholder="Enter email.." name="s_email" required>
                 <br><br>
-                <input type="submit" id="form-submit" name="form-submit" value="Add">
+                <input class="fill-press" type="submit" id="form-submit" name="form-submit" value="Add">
             </fieldset>
         </form>
-        <form class="fieldset-form" action="" method="post">
+        <form class="fieldset-form2" action="" method="post">
             <fieldset>
                 <legend>Associate a student with a course</legend>
                 <br>
-                <input type="text" placeholder="Student Name.." name="s_name" required>
+                <input class="fill-press" type="text" placeholder="Student Name.." name="s_name" required>
                 <br><br>
-                <input type="email" placeholder="Enter email.." name="s_email" required>
+                <input class="fill-press" type="email" placeholder="Enter email.." name="s_email" required>
                 <br><br>
-                <input type="text" placeholder="Course name.." name="c_name">
+                <input class="fill-press" type="text" placeholder="Course name.." name="c_name">
                 <br><br>
-                <input type="submit" id="form2-submit" name="form2-submit" value="Associate">
+                <input class="fill-press" type="submit" id="form2-submit" name="form2-submit" value="Associate">
             </fieldset>
         </form>
     </div>

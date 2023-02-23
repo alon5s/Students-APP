@@ -10,12 +10,17 @@
 
 <body>
     {% include 'navbar.html' %}
+    <br><br>
     <div class="s_name">
-        <h3>Full Name:</h3>
-        {{ student_name[0][0] }}
+        {% for detail in student_details %}
+        <h3 class="message">Full Name:</h3>
+        {{ detail[1] }}
+        <h3 class="message">Email:</h3>
+        {{ detail[2] }}
+        {% endfor %}
     </div>
     <div class="c_names">
-        <h3>Courses:</h3>
+        <h3 class="message">Courses:</h3>
         {% for course in course_names %}
         {{ course[0][0] }}
         <br>

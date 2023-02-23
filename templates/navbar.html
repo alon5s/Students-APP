@@ -5,14 +5,13 @@
     <a href="/students">Students</a>
     <a href="/courses">Courses</a>
     <a>
-        <form action="/logout" method="get">
-            <input type="submit" value="Logout">
+        <form class="search" action="/results" method="get">
+            <input class="fill-press" type="search" placeholder="Search.." name="searchbox">
         </form>
     </a>
-    <!-- <div class="search-container">
-        <form>
-            <input type="text" name="search" placeholder="Search..">
-            <button type="submit"><img src="/images/search-img.png"></button>
+    <a>
+        <form class="logout" action="/logout" method="get">
+            <input class="fill-press" type="submit" value="Logout" name="logout">
         </form>
-    </div> -->
+    </a>
 </div>

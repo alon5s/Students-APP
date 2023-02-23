@@ -11,6 +11,7 @@
 
 <body>
     {% include 'navbar.html' %}
+    <br><br>
     <div class="courses">
         <h1 class="headline">Courses:</h1>
         {% for course in courses %}
@@ -20,30 +21,26 @@
             {% endfor %}
         </div>
     </div>
-
-    <div class="form-container">
-        <form class="fieldset-form" action="" method="post">
-            <fieldset>
-                <legend>Add Course:</legend>
-                <br>
-                <input type="text" placeholder="Course Name.." name="course">
-                <br><br>
-                <label for="teacher">Choose a Teacher:</label>
-                <br>
-                <select name="teacher">
-                    <option></option>
-                    {% for teacher in teachers %}
-                    <option value="{{ teacher }}">{{ teacher }}</option>
-                    {% endfor %}
-                </select>
-                <br><br>
-                <input type="text" placeholder="Course Description.." name="desc_">
-                <br><br>
-                <button type="submit">Submit</button>
-            </fieldset>
-        </form>
-        <div>{{ message }}</div>
-    </div>
+    <form class="fieldset-form1" action="" method="post">
+        <fieldset>
+            <legend>Add Course:</legend>
+            <br>
+            <input class="fill-press" type="text" placeholder="Course Name.." name="course">
+            <br><br>
+            <label for="teacher">Choose a Teacher:</label>
+            <br>
+            <select class="fill-press" name="teacher">
+                <option></option>
+                {% for teacher in teachers %}
+                <option value="{{ teacher }}">{{ teacher }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <input class="fill-press" type="text" placeholder="Course Description.." name="desc_">
+            <br><br>
+            <button class="fill-press" type="submit">Submit</button>
+        </fieldset>
+    </form>
 </body>
 
 </html>

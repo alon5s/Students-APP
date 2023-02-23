@@ -12,17 +12,19 @@
 <body>
     {% include 'navbar.html' %}
     <br><br>
-    <form class="login-form" action="" method="post">
-        <fieldset>
-            <legend>Please Login Here:</legend>
-        <br>
-        <input type="email" placeholder="Enter email" name="email" required autofocus>
-        <br><br>
-        <input type="password" placeholder="Enter password" name="password" required autofocus>
-        <br><br>
-        <input type="submit" value="Submit">
-    </fieldset>
-    </form>
+    <div class="login-form">
+        <form action="" method="post">
+            <fieldset>
+                <legend>Please Login Here:</legend>
+                <br>
+                <input class="fill-press" type="email" placeholder="Enter email" name="email" required autofocus>
+                <br><br>
+                <input class="fill-press" type="password" placeholder="Enter password" name="password" required autofocus>
+                <br><br>
+                <input class="fill-press" type="submit" value="Submit">
+            </fieldset>
+        </form>
+    </div>
 </body>
 
 </html>

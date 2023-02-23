@@ -1,6 +1,8 @@
 .topnav {
     width: 100%;
     display: inline-block;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
 }
 
 body {
@@ -26,10 +28,17 @@ body {
     padding-top: 2px;
 }
 
+.fill-press{
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    color: white;
+}
+
 legend {
     font-weight: bolder;
     text-decoration: underline;
     font-size: 3vh;
+    width: max-content;
 }
 
 fieldset {
@@ -37,26 +46,73 @@ fieldset {
 }
 
 .courses {
+    margin: auto;
     text-align: center;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    width: max-content;
 }
 
 .course {
     font-size: 3vh;
-    text-align: center;
 }
 
 .login-button-form {
     text-align: left;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
+    width: max-content;    
 }
 
-.login-form{
-    display:flex;
-    justify-content: center;
-    text-align: center;
+.search, .logout{
+    margin-right: 10px;
+    margin-bottom: 5px; 
 }
 
-.fieldset-form{
+.message{
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
+    width: max-content;
+}
+
+.login-form {
+    margin: auto;
     text-align: center;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
+    width: max-content;   
+}
+
+.fieldset-form1 {
+    text-align: center;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
+    width: max-content; 
+}
+
+.fieldset-form2 {
+    text-align: center;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.search-student{
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
+    color: white;
+}
+
+.students{
+    text-align: center;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
 }
 
 .headline {
@@ -65,17 +121,26 @@ fieldset {
 
 .form-container {
     text-align: left;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
 }
 
 .home {
-    background-image: url(/static/images/institute.jpg);
+    /* background-image: url(/static/images/institute.jpg);
     width: 99%;
+    background-position: center top;
     background-repeat: no-repeat;
-    background-size: 100% 700px;
+    background-size: 50% 350px; */
 }
 
 .home-course {
-    text-align: left;
+    text-align: center;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
+    margin: auto;
+    width: max-content;  
 }
 
 .container {
@@ -84,14 +149,19 @@ fieldset {
     align-items: flex-start;
 }
 
-.student, .course_style {
+.student,
+.course_style {
     color: white;
 }
 
-.student:hover{
+.student:hover {
     color: rgb(137, 137, 137);
 }
 
 table{
-    position: fixed;
+    /* position: fixed; */
+}
+
+a {
+    color: white;
 }

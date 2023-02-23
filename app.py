@@ -27,9 +27,9 @@ def home():
     courses = [c_name[0] for c_name in execute_query("SELECT name FROM courses")]
     if session["role"] != 'Guest':
         if session["role"] == 'admin':
-            str = f'Logged in as {session["role"]}'
+            str = f'Logged in as: {session["role"]}'
         else:
-            str = f'Logged in as {session["email"]}'
+            str = f'Logged in as: {session["email"]}'
     else:
         str = f'Welcome {session["role"]}'
     return render_template("index.html", str=str, courses=courses)
@@ -41,6 +41,27 @@ def authenticate(email, password):
         return None
     else:
         return role[0][0]
+
+
+@app.route('/results', methods=['GET', 'POST'])
+def results():
+    searchbox = request.args['searchbox']
+    result = f"This is what I have found for '{searchbox}'"
+    div = """<div class="message">"""
+    div_ = "</div>"
+    if searchbox == '':
+        return render_template("results.html", result=result, div=div, div_=div_)
+    else:
+        courses = execute_query(f"SELECT * FROM courses WHERE name LIKE '%{searchbox}%'")
+        students = execute_query(f"SELECT * FROM students WHERE name LIKE '%{searchbox}%'")
+        return render_template("results.html", courses=courses, students=students, result=result, div=div, div_=div_)
+
+
+# @app.route('/student/<student_id>', methods=['GET', 'POST'])
+# def student_profile(student_id):
+#     details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
+#     course_ids = execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
+#     return render_template("profile.html", details=details)  # course_name=course_name)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -116,51 +137,31 @@ def show_course(course_id):
     message = f"Welcome To Course {c_name[0]}".title()
     student_ids = [s_id[0] for s_id in execute_query(
         f"SELECT student_id FROM students_courses WHERE course_id={course_id}")]
-    students_names = [[s_name[0] for s_name in execute_query(
-        f"SELECT name FROM students WHERE id={student_id}")] for student_id in student_ids]
-    return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students_names=students_names)
+    students = [[(student[0],student[1]) for student in execute_query(
+        f"SELECT id, name FROM students WHERE id={student_id}")] for student_id in student_ids]
+    print(students[0])
+    return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students=students)
 
 
 @app.route('/register/<student_id>/<course_id>')
 def register(student_id, course_id):
-    # if session.get("role", "anonymous") == 'admin':
     try:
         execute_query(
             f"INSERT INTO students_courses (student_id, course_id) VALUES ('{student_id}', '{course_id}')")
     except IntegrityError:
         return f"{student_id} is already registered to {course_id}"
     return redirect(url_for('registrations', student_id=student_id))
-    # else:
-    #     return abort(403)
 
 
-@app.route('/registrations/<student_id>')
-def registrations(student_id):
-    # 1. Get course IDs for this student using student_courses
-    # 2. Get course names using course IDs
+@app.route('/student/<student_id>')
+def profile(student_id):
     course_ids = execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
     clean_ids = [c[0] for c in course_ids]
     course_names = []
     for i in clean_ids:
         course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
-    student_name = execute_query(f"SELECT name FROM students WHERE id={student_id}")
-    return render_template("registrations.html", student_name=student_name, course_names=course_names)
-    # course_names = execute_query(f"""
-    #     SELECT courses.name, courses.teacher_id FROM courses
-    #     JOIN students_courses on students_courses.course_id=courses.id
-    #     WHERE students_courses.student_id={student_id}
-    # """)
-    # courses = []
-    # # the challenge is to do it in one line !
-    # for course_tuple in course_names:
-    #     course = namedtuple("Course", ["name", "teacher"])
-    #     course.name = course_tuple[0]
-    #     course.teacher = course_tuple[1]
-    #     courses.append(course)
-    # # course=namedtupe("Course", ["name","teacher"])
-    # # course.name="alon"
-    # # course.teacher="tal"
-    # return render_template("registrations.html", courses=courses)
+    student_details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
+    return render_template("profile.html", student_details=student_details, course_names=course_names)
 
 
 # @app.route('/register/<student_id>/<course_id>')
