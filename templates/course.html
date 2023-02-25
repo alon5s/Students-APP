@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="message">{{ message }}</h1>
+{% for teacher in teacher_details %}
+<h2 class="headline">Teacher: {{ teacher[0] }}</h2>
+<h3 class="headline">Email: {{ teacher[1] }}</h3>
+{% endfor %}
+<h2 class="headline">Students List:</h2>
+{% for student in students %}
+{% for s in student %}
+<a href="/profile/{{s[0]}}">{{ s[1] }}</a>
+<br>
+{% endfor %}
+{% endfor %}
+{% endblock content %}

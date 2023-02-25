@@ -1,31 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
-</head>
-
-<body>
-    {% include 'navbar.html' %}
-    <br><br>
-    <div class="s_name">
-        {% for detail in student_details %}
-        <h3 class="message">Full Name:</h3>
-        {{ detail[1] }}
-        <h3 class="message">Email:</h3>
-        {{ detail[2] }}
-        {% endfor %}
-    </div>
-    <div class="c_names">
-        <h3 class="message">Courses:</h3>
-        {% for course in course_names %}
-        {{ course[0][0] }}
-        <br>
-        {% endfor %}
-    </div>
-</body>
-
-</html>
+{% extends 'base.html' %}
+{% block content %}
+<br><br>
+<div class="s_name">
+    {% for detail in student_details %}
+    <form action="/update/{{ detail[0] }}" method="get">
+        <input class="fill-press" type="submit" value="Update Profile">
+    </form>
+    <h3 class="message">Full Name:</h3>
+    {{ detail[1] }}
+    <h3 class="message">Email:</h3>
+    {{ detail[2] }}
+    <h3 class="message">Phone:</h3>
+    {{ detail[3] }}
+    <h3 class="message">Grade(avg):</h3>
+    {{ detail[4] }}
+    {% endfor %}
+</div>
+<div class="c_names">
+    <h3 class="message">Courses:</h3>
+    {% for course in course_names %}
+    {{ course[0][0] }}
+    <br>
+    {% endfor %}
+</div>
+{% endblock content %}

@@ -31,7 +31,9 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS students (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE
+            email TEXT NOT NULL UNIQUE,
+            phone TEXT,
+            grade INTEGER
         )
     """)
     execute_query("""
@@ -49,23 +51,28 @@ def create_tables():
             id INTEGER PRIMARY KEY,
             email TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
-            role
+            role TEXT NOT NULL,
+            FOREIGN KEY (email) REFERENCES students (email)
         )
     """)
 
 
 def create_fake_data(students_num=40, teachers_num=4):
     fake = faker.Faker()
+    default_password = 12345678
     for student in range(students_num):
-        execute_query(f"INSERT INTO students (name,email) VALUES ('{fake.name()}','{fake.email()}')")
+        student = {"name": fake.name(), "email": fake.email(), "grade": random.randint(55, 100)}
+        execute_query(f"""INSERT INTO students (name,email,grade) VALUES ('{student["name"]}','{student["email"]}',{student["grade"]})""")
+        execute_query(f"""INSERT INTO users (email,password,role) VALUES ('{student["email"]}','{default_password}','student')""")
     for teacher in range(teachers_num):
-        execute_query(f"INSERT INTO teachers (name,email) VALUES ('{fake.name()}','{fake.email()}')")
+        teacher = {"name": fake.name(), "email": fake.email()}
+        execute_query(f"""INSERT INTO teachers (name,email) VALUES ('{teacher["name"]}','{teacher["email"]}')""")
+        execute_query(f"""INSERT INTO users (email,password,role) VALUES ('{teacher["email"]}','{default_password}','teacher')""")
     courses = ['python', 'javascript']
     for course_name in courses:
         teacher_ids = [tup[0] for tup in execute_query("SELECT id FROM teachers")]
         execute_query(f"INSERT INTO courses (name, teacher_id) VALUES ('{course_name}','{random.choice(teacher_ids)}')")
     execute_query("INSERT INTO users VALUES (NULL,'admin@admin.com','admin','admin')")
-    execute_query("INSERT INTO users VALUES (NULL,'alon@gmail.com','alon','student')")
 
 
 if __name__ == "__main__":

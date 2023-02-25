@@ -1,46 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/style.css">
-    <title>Courses List</title>
-</head>
-
-<body>
-    {% include 'navbar.html' %}
-    <br><br>
-    <div class="courses">
-        <h1 class="headline">Courses:</h1>
-        {% for course in courses %}
-        <div class="course">
-            <a class="course_style" href="/course/{{course[0]}}">{{ course[1] }}</a>
-            <br><br>
-            {% endfor %}
-        </div>
+{% extends 'base.html' %}
+{% block content %}
+<br><br>
+<div class="courses">
+    <h1 class="headline">Courses:</h1>
+    {% for course in courses %}
+    <div class="course">
+        <a class="course_style" href="/course/{{course[0]}}">{{ course[1] }}</a>
+        <br><br>
+        {% endfor %}
     </div>
-    <form class="fieldset-form1" action="" method="post">
-        <fieldset>
-            <legend>Add Course:</legend>
-            <br>
-            <input class="fill-press" type="text" placeholder="Course Name.." name="course">
-            <br><br>
-            <label for="teacher">Choose a Teacher:</label>
-            <br>
-            <select class="fill-press" name="teacher">
-                <option></option>
-                {% for teacher in teachers %}
-                <option value="{{ teacher }}">{{ teacher }}</option>
-                {% endfor %}
-            </select>
-            <br><br>
-            <input class="fill-press" type="text" placeholder="Course Description.." name="desc_">
-            <br><br>
-            <button class="fill-press" type="submit">Submit</button>
-        </fieldset>
-    </form>
-</body>
-
-</html>
+</div>
+<form class="fieldset-form1" action="" method="post">
+    <fieldset>
+        <legend>Add Course:</legend>
+        <br>
+        <input class="fill-press" type="text" placeholder="Course Name.." name="course">
+        <br><br>
+        <label for="teacher">Choose a Teacher:</label>
+        <br>
+        <select class="fill-press" name="teacher">
+            <option></option>
+            {% for teacher in teachers %}
+            <option value="{{ teacher }}">{{ teacher }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <input class="fill-press" type="text" placeholder="Course Description.." name="desc_">
+        <br><br>
+        <button class="fill-press" type="submit">Submit</button>
+    </fieldset>
+</form>
+{% endblock content %}

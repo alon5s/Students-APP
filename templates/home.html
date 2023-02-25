@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<br><br>
+<div class="entry-message">{{ str }}</div>
+<br>
+<div class="home-course">
+    <h2>New Courses At Our Institution</h2>
+    {% for course in courses[-2:] %}
+    <a href="/course/{{course[0]}}">{{ course[1] }}</a>
+    <br>
+    {% endfor %}
+</div>
+{% endblock content %}

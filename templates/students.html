@@ -1,61 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/style.css">
-    <title>Students List</title>
-    <script defer src="/static/index.js"></script>
-</head>
-
-<body>
-    {% include 'navbar.html' %}
-    <br><br>
-    <input class="search-student" type="text" id="search" placeholder="Search By Name/Email...">
-    <br><br>
-    <div class="container">
-        <div class="students">
-            <h1 class="headline">Students:</h1>
-            <table id="students_table">
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                </tr>
-                {% for student in students %}
-                <tr>
-                    <td><a class="student" href="/student/{{student[0]}}">{{ student[1] }}</a></td>
-                    <td>{{ student[2] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-        <form class="fieldset-form1" action="" method="post">
-            <fieldset>
-                <legend>Add a student</legend>
-                <br>
-                <input class="fill-press" type="text" placeholder="Student Name.." name="s_name" required>
-                <br><br>
-                <input class="fill-press" type="email" placeholder="Enter email.." name="s_email" required>
-                <br><br>
-                <input class="fill-press" type="submit" id="form-submit" name="form-submit" value="Add">
-            </fieldset>
-        </form>
-        <form class="fieldset-form2" action="" method="post">
-            <fieldset>
-                <legend>Associate a student with a course</legend>
-                <br>
-                <input class="fill-press" type="text" placeholder="Student Name.." name="s_name" required>
-                <br><br>
-                <input class="fill-press" type="email" placeholder="Enter email.." name="s_email" required>
-                <br><br>
-                <input class="fill-press" type="text" placeholder="Course name.." name="c_name">
-                <br><br>
-                <input class="fill-press" type="submit" id="form2-submit" name="form2-submit" value="Associate">
-            </fieldset>
-        </form>
+{% extends 'base.html' %}
+{% block content %}
+<br><br>
+<input class="search-student" type="text" id="search" placeholder="Search By Name/Email...">
+<br><br>
+<div class="container">
+    <div class="students">
+        <h1 class="headline">Students:</h1>
+        <table id="students_table">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+            {% for student in students %}
+            <tr>
+                <td><a class="student" href="/profile/{{student[0]}}">{{ student[1] }}</a></td>
+                <td>{{ student[2] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
-</body>
-
-</html>
+    <form class="fieldset-form1" action="" method="post">
+        <fieldset>
+            <legend>Add a student</legend>
+            <br>
+            <input class="fill-press" type="text" placeholder="Student Name.." name="s_name" required>
+            <br><br>
+            <input class="fill-press" type="email" placeholder="Enter email.." name="s_email" required>
+            <br><br>
+            <input class="fill-press" type="submit" id="form-submit" name="form-submit" value="Add">
+        </fieldset>
+    </form>
+    <form class="fieldset-form2" action="" method="post">
+        <fieldset>
+            <legend>Associate a student with a course</legend>
+            <br>
+            <input class="fill-press" type="text" placeholder="Student Name.." name="s_name" required>
+            <br><br>
+            <input class="fill-press" type="email" placeholder="Enter email.." name="s_email" required>
+            <br><br>
+            <input class="fill-press" type="text" placeholder="Course name.." name="c_name">
+            <br><br>
+            <input class="fill-press" type="submit" id="form2-submit" name="form2-submit" value="Associate">
+        </fieldset>
+    </form>
+</div>
+{% endblock content %}

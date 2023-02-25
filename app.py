@@ -6,41 +6,45 @@ from sqlite3 import IntegrityError
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-authorized_paths = ["students", "courses"]
 
 
 @app.before_request
 def auth():
     if "role" not in session.keys():
         session["role"] = "Guest"
-    for path in authorized_paths:
-        if session["role"] != 'admin':
-            if path in request.full_path:
-                return abort(403)
+        session["email"] = "guest@gmail.com"
+    if session["role"] != 'admin':
+        if "courses" in request.full_path:
+            return abort(403)
+        if "students" in request.full_path:
+            return abort(403)
+    if session["role"] == 'Guest':
+        if "profile" in request.full_path:
+            return abort(403)
 
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    courses = [c_name[0] for c_name in execute_query("SELECT name FROM courses")]
-    str, link, login_logout = navbar_auth()
-    return render_template("index.html", courses=courses, str=str, link=link, login_logout=login_logout)
+    courses = [(c_name[0], c_name[1]) for c_name in execute_query("SELECT id,name FROM courses")]
+    str, link, log = navbar_auth()
+    return render_template("home.html", courses=courses, str=str, link=link, log=log)
 
 
 def navbar_auth():
     if session["role"] != 'Guest':
         if session["role"] == 'admin':
             str = f'Logged in as: {session["role"]}'
-            login_logout = "Logout"
+            log = "Logout"
             link = "/logout"
-        else:
+        elif session["role"] == 'student':
             str = f'Logged in as: {session["email"]}'
-            login_logout = "Logout"
+            log = "Logout"
             link = "/logout"
     else:
         str = f'Welcome {session["role"]}'
-        login_logout = "Login"
+        log = "Login"
         link = "/login"
-    return str, link, login_logout
+    return str, link, log
 
 
 def authenticate(email, password):
@@ -53,7 +57,7 @@ def authenticate(email, password):
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
-    str, link, login_logout = navbar_auth()
+    str, link, log = navbar_auth()
     searchbox = request.args['searchbox']
     result = f"This is what I have found for '{searchbox}'"
     div = """<div class="message">"""
@@ -63,7 +67,7 @@ def results():
     else:
         courses = execute_query(f"SELECT * FROM courses WHERE name LIKE '%{searchbox}%'")
         students = execute_query(f"SELECT * FROM students WHERE name LIKE '%{searchbox}%'")
-        return render_template("results.html", courses=courses, students=students, result=result, div=div, div_=div_, link=link, login_logout=login_logout)
+        return render_template("results.html", courses=courses, students=students, result=result, div=div, div_=div_, link=link, log=log)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -87,7 +91,7 @@ def logout():
 
 @app.route('/students', methods=['GET', 'POST'])
 def students():
-    str, link, login_logout = navbar_auth()
+    str, link, log = navbar_auth()
     students = execute_query("SELECT * FROM students")
     if request.method == 'POST':
         # FORM1 : ADD STUDENT
@@ -107,12 +111,12 @@ def students():
             execute_query(
                 f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
         return redirect(url_for('students'))
-    return render_template("students.html", students=students, link=link, login_logout=login_logout)
+    return render_template("students.html", students=students, link=link, log=log)
 
 
 @app.route('/courses', methods=['GET', 'POST'])
 def courses():
-    str, link, login_logout = navbar_auth()
+    str, link, log = navbar_auth()
     if request.method == 'POST':
         # first section: adding course
         add_course_name = request.form['course']
@@ -127,36 +131,52 @@ def courses():
     else:
         teachers = [t[0] for t in execute_query("SELECT name FROM teachers")]
         courses = execute_query("SELECT * FROM courses")
-        return render_template("courses.html", courses=courses, teachers=teachers, link=link, login_logout=login_logout)
+        return render_template("courses.html", courses=courses, teachers=teachers, link=link, log=log)
 
 
 @app.route('/course/<course_id>')
 def show_course(course_id):
-    str, link, login_logout = navbar_auth()
+    str, link, log = navbar_auth()
     c_name = [c_id[0] for c_id in execute_query(
         f"SELECT name FROM courses WHERE id={course_id}")]
     teacher_id = [t_id[0] for t_id in execute_query(
         f"SELECT teacher_id FROM courses WHERE id={course_id}")]
-    teacher_name = [t_name[0] for t_name in execute_query(
-        f"SELECT name FROM teachers WHERE id={teacher_id[0]}")]
+    teacher_details = [(teacher[0], teacher[1]) for teacher in execute_query(
+        f"SELECT name,email FROM teachers WHERE id={teacher_id[0]}")]
     message = f"Welcome To Course {c_name[0]}".title()
     student_ids = [s_id[0] for s_id in execute_query(
         f"SELECT student_id FROM students_courses WHERE course_id={course_id}")]
     students = [[(student[0], student[1]) for student in execute_query(
         f"SELECT id, name FROM students WHERE id={student_id}")] for student_id in student_ids]
-    return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students=students, link=link, login_logout=login_logout)
+    return render_template("course.html", teacher_details=teacher_details, c_name=c_name, message=message, students=students, link=link, log=log)
 
 
-@app.route('/student/<student_id>')
+@app.route('/profile/<int:student_id>')
 def profile(student_id):
-    str, link, login_logout = navbar_auth()
+    str, link, log = navbar_auth()
     course_ids = execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
     clean_ids = [c[0] for c in course_ids]
     course_names = []
     for i in clean_ids:
         course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
     student_details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
-    return render_template("profile.html", student_details=student_details, course_names=course_names, link=link, login_logout=login_logout)
+    return render_template("profile.html", student_details=student_details, course_names=course_names, link=link, log=log, student_id=student_id)
+
+
+@app.route('/update/<int:student_id>', methods=['GET', 'POST'])
+def update(student_id):
+    str, link, log = navbar_auth()
+    if request.method == 'POST':
+        email = request.form["email"]
+        phone = request.form["phone"]
+        password = request.form["password"]
+        if (email != '') or (phone != '') or (password != ''):
+            execute_query(f"UPDATE students SET email='{email}',phone='{phone}' WHERE id={student_id}")
+            db_email = execute_query(f"SELECT email FROM students WHERE id={student_id}")
+            execute_query(f"UPDATE users SET password='{password}' WHERE email='{db_email[0][0]}'")
+        return redirect(url_for("profile", student_id=student_id))
+    else:
+        return render_template("update.html", link=link, log=log, student_id=student_id)
 
 
 @app.route('/register/<student_id>/<course_id>')

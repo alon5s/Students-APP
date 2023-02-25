@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Back To School</title>
+</head>
+
+<body class="home">
+    <div class="topnav">
+        <a href="/">Home</a>
+        <a href="/profile/{{id}}">Profile</a>
+        <a href="/students">Students</a>
+        <a href="/courses">Courses</a>
+        <a href="{{ link }}" class="logout">{{ log }}</a>
+        <a>
+            <form class="search" action="/results" method="get">
+                <input class="fill-press" type="search" placeholder="Search.." name="searchbox">
+            </form>
+        </a>
+    </div>
