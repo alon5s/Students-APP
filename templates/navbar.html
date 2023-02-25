@@ -4,14 +4,10 @@
     <a href="/">Home</a>
     <a href="/students">Students</a>
     <a href="/courses">Courses</a>
+    <a href="{{ link }}" class="logout">{{ login_logout }}</a>
     <a>
         <form class="search" action="/results" method="get">
             <input class="fill-press" type="search" placeholder="Search.." name="searchbox">
-        </form>
-    </a>
-    <a>
-        <form class="logout" action="/logout" method="get">
-            <input class="fill-press" type="submit" value="Logout" name="logout">
         </form>
     </a>
 </div>

@@ -12,17 +12,12 @@
 <body class="home">
     {% include 'navbar.html' %}
     <br><br>
-    <div class="login-button-form">
-        <div>{{ str }}</div>
-        <form action="/login" method="get">
-            <input type="submit" value="Login">
-        </form>
-    </div>
+    <div class="entry-message">{{ str }}</div>
     <br>
     <div class="home-course">
         <h2>New Courses At Our Institution</h2>
         {% for course in courses[-2:] %}
-        <div class="home-wcourse">{{ course }}</div>
+        <div>{{ course }}</div>
         <br>
         {% endfor %}
     </div>

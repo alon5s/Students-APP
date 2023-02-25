@@ -28,7 +28,14 @@ body {
     padding-top: 2px;
 }
 
-.fill-press{
+.logout {
+    float: right;
+    border: none;
+    padding-left: 5px;
+    padding-top: 2px;
+}
+
+.fill-press {
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
     color: white;
@@ -57,20 +64,21 @@ fieldset {
     font-size: 3vh;
 }
 
-.login-button-form {
+.entry-message {
     text-align: left;
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
     padding: 10px;
-    width: max-content;    
+    width: max-content;
 }
 
-.search, .logout{
+.search,
+.logout {
     margin-right: 10px;
-    margin-bottom: 5px; 
+    margin-bottom: 5px;
 }
 
-.message{
+.message {
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
     padding: 10px;
@@ -83,7 +91,7 @@ fieldset {
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
     padding: 10px;
-    width: max-content;   
+    width: max-content;
 }
 
 .fieldset-form1 {
@@ -91,7 +99,7 @@ fieldset {
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
     padding: 10px;
-    width: max-content; 
+    width: max-content;
 }
 
 .fieldset-form2 {
@@ -101,14 +109,14 @@ fieldset {
     padding: 10px;
 }
 
-.search-student{
+.search-student {
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
     padding: 10px;
     color: white;
 }
 
-.students{
+.students {
     text-align: center;
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
@@ -126,21 +134,13 @@ fieldset {
     padding: 10px;
 }
 
-.home {
-    /* background-image: url(/static/images/institute.jpg);
-    width: 99%;
-    background-position: center top;
-    background-repeat: no-repeat;
-    background-size: 50% 350px; */
-}
-
 .home-course {
     text-align: center;
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
     padding: 10px;
     margin: auto;
-    width: max-content;  
+    width: max-content;
 }
 
 .container {
@@ -156,10 +156,6 @@ fieldset {
 
 .student:hover {
     color: rgb(137, 137, 137);
-}
-
-table{
-    /* position: fixed; */
 }
 
 a {

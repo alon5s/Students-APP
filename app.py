@@ -4,11 +4,8 @@ from setup_db import execute_query
 from sqlite3 import IntegrityError
 # from collections import namedtuple
 
-
 app = Flask(__name__)
-
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-
 authorized_paths = ["students", "courses"]
 
 
@@ -25,14 +22,25 @@ def auth():
 @app.route('/', methods=['GET', 'POST'])
 def home():
     courses = [c_name[0] for c_name in execute_query("SELECT name FROM courses")]
+    str, link, login_logout = navbar_auth()
+    return render_template("index.html", courses=courses, str=str, link=link, login_logout=login_logout)
+
+
+def navbar_auth():
     if session["role"] != 'Guest':
         if session["role"] == 'admin':
             str = f'Logged in as: {session["role"]}'
+            login_logout = "Logout"
+            link = "/logout"
         else:
             str = f'Logged in as: {session["email"]}'
+            login_logout = "Logout"
+            link = "/logout"
     else:
         str = f'Welcome {session["role"]}'
-    return render_template("index.html", str=str, courses=courses)
+        login_logout = "Login"
+        link = "/login"
+    return str, link, login_logout
 
 
 def authenticate(email, password):
@@ -45,6 +53,7 @@ def authenticate(email, password):
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
+    str, link, login_logout = navbar_auth()
     searchbox = request.args['searchbox']
     result = f"This is what I have found for '{searchbox}'"
     div = """<div class="message">"""
@@ -54,14 +63,7 @@ def results():
     else:
         courses = execute_query(f"SELECT * FROM courses WHERE name LIKE '%{searchbox}%'")
         students = execute_query(f"SELECT * FROM students WHERE name LIKE '%{searchbox}%'")
-        return render_template("results.html", courses=courses, students=students, result=result, div=div, div_=div_)
-
-
-# @app.route('/student/<student_id>', methods=['GET', 'POST'])
-# def student_profile(student_id):
-#     details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
-#     course_ids = execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
-#     return render_template("profile.html", details=details)  # course_name=course_name)
+        return render_template("results.html", courses=courses, students=students, result=result, div=div, div_=div_, link=link, login_logout=login_logout)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -85,6 +87,7 @@ def logout():
 
 @app.route('/students', methods=['GET', 'POST'])
 def students():
+    str, link, login_logout = navbar_auth()
     students = execute_query("SELECT * FROM students")
     if request.method == 'POST':
         # FORM1 : ADD STUDENT
@@ -104,11 +107,12 @@ def students():
             execute_query(
                 f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
         return redirect(url_for('students'))
-    return render_template("students.html", students=students)
+    return render_template("students.html", students=students, link=link, login_logout=login_logout)
 
 
 @app.route('/courses', methods=['GET', 'POST'])
 def courses():
+    str, link, login_logout = navbar_auth()
     if request.method == 'POST':
         # first section: adding course
         add_course_name = request.form['course']
@@ -123,11 +127,12 @@ def courses():
     else:
         teachers = [t[0] for t in execute_query("SELECT name FROM teachers")]
         courses = execute_query("SELECT * FROM courses")
-        return render_template("courses.html", courses=courses, teachers=teachers)
+        return render_template("courses.html", courses=courses, teachers=teachers, link=link, login_logout=login_logout)
 
 
 @app.route('/course/<course_id>')
 def show_course(course_id):
+    str, link, login_logout = navbar_auth()
     c_name = [c_id[0] for c_id in execute_query(
         f"SELECT name FROM courses WHERE id={course_id}")]
     teacher_id = [t_id[0] for t_id in execute_query(
@@ -137,10 +142,21 @@ def show_course(course_id):
     message = f"Welcome To Course {c_name[0]}".title()
     student_ids = [s_id[0] for s_id in execute_query(
         f"SELECT student_id FROM students_courses WHERE course_id={course_id}")]
-    students = [[(student[0],student[1]) for student in execute_query(
+    students = [[(student[0], student[1]) for student in execute_query(
         f"SELECT id, name FROM students WHERE id={student_id}")] for student_id in student_ids]
-    print(students[0])
-    return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students=students)
+    return render_template("show_course.html", teacher_name=teacher_name, c_name=c_name, message=message, students=students, link=link, login_logout=login_logout)
+
+
+@app.route('/student/<student_id>')
+def profile(student_id):
+    str, link, login_logout = navbar_auth()
+    course_ids = execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
+    clean_ids = [c[0] for c in course_ids]
+    course_names = []
+    for i in clean_ids:
+        course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
+    student_details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
+    return render_template("profile.html", student_details=student_details, course_names=course_names, link=link, login_logout=login_logout)
 
 
 @app.route('/register/<student_id>/<course_id>')
@@ -152,28 +168,6 @@ def register(student_id, course_id):
         return f"{student_id} is already registered to {course_id}"
     return redirect(url_for('registrations', student_id=student_id))
 
-
-@app.route('/student/<student_id>')
-def profile(student_id):
-    course_ids = execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
-    clean_ids = [c[0] for c in course_ids]
-    course_names = []
-    for i in clean_ids:
-        course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
-    student_details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
-    return render_template("profile.html", student_details=student_details, course_names=course_names)
-
-
-# @app.route('/register/<student_id>/<course_id>')
-# def register(student_id, course_id):
-#     # This endpoint inserts a student into students_courses table so student_id
-#     # is registered to course_id. Then show all courses for this student.
-#     execute_query(f"INSERT INTO students_courses VALUES (NULL, '{student_id}', '{course_id}')")
-#     return redirect(url_for('registrations', student_id=student_id))
-
-
-# TODO add /registrations endpoint to show all registered students and students
-# for testing: translate from course id to course name
 
 @app.route('/course_name/<id>')
 def course(id):
