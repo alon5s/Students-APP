@@ -32,8 +32,7 @@ def create_tables():
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
-            phone TEXT,
-            grade INTEGER
+            phone TEXT
         )
     """)
     execute_query("""
@@ -41,8 +40,9 @@ def create_tables():
             id INTEGER PRIMARY KEY,
             student_id INTEGER,
             course_id INTEGER,
+            grade INTEGER,
             FOREIGN KEY (student_id) REFERENCES students (id),
-            FOREIGN KEY (course_id) REFERENCES courses (id)
+            FOREIGN KEY (course_id) REFERENCES courses (id),
             UNIQUE (student_id, course_id)
         )
     """)
@@ -61,8 +61,8 @@ def create_fake_data(students_num=40, teachers_num=4):
     fake = faker.Faker()
     default_password = 12345678
     for student in range(students_num):
-        student = {"name": fake.name(), "email": fake.email(), "grade": random.randint(55, 100)}
-        execute_query(f"""INSERT INTO students (name,email,grade) VALUES ('{student["name"]}','{student["email"]}',{student["grade"]})""")
+        student = {"name": fake.name(), "email": fake.email()}
+        execute_query(f"""INSERT INTO students (name,email) VALUES ('{student["name"]}','{student["email"]}')""")
         execute_query(f"""INSERT INTO users (email,password,role) VALUES ('{student["email"]}','{default_password}','student')""")
     for teacher in range(teachers_num):
         teacher = {"name": fake.name(), "email": fake.email()}

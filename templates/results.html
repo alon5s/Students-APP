@@ -6,11 +6,15 @@
 </div>
 <br>
 {% for course in courses %}
-<a href="/course/{{course[0]}}">{{ course[1] }}</a>
+<a href="/course/{{course.id}}">{{ course.name }}</a>
 {% endfor %}
 <br>
 {% for student in students %}
-<a href="/profile/{{student[0]}}">{{ student[1] }}</a>
+<a href="/profile/{{student.id}}">{{ student.name }}</a>
+<br>
+{% endfor %}
+{% for teacher in teachers %}
+<a href="/teacher/{{teacher.id}}">{{ teacher.name }}</a>
 <br>
 {% endfor %}
 {% endblock content %}

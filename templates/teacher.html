@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="headline">Welcome {{ t_name[0] }}</h1>
+<h2 class="headline">Your Courses:</h2>
+{% for course in course_details %}
+<h3 class="headline">{{ course[1] }}</h3>
+<h3 class="headline">Students:</h3>
+    {% for name in student_names %}
+        {{ name[0][0] }}
+        {% for grade in student_details %}
+            <form action="" method="post">
+                <input class="fill-press" type="text" placeholder="{{ grade[0][0] }}" name="grade">
+                    <input class="fill-press" type="submit" value="Update">
+            </form>
+        {% endfor %}
+        <br><br>
+    {% endfor %}
+    <br><br>
+{% endfor %}
+{% endblock content %}

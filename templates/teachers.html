@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<br><br>
+<h1 class="headline">Our teachers:</h1>
+{% for teacher in teachers %}
+<a class="fill-press" href="/teacher/{{teacher[0]}}">{{ teacher[1] }}</a>
+<br><br>
+{% endfor %}
+{% endblock content %}

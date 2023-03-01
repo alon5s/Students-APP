@@ -1,7 +1,10 @@
 import json
+import crud
 from flask import Flask, session, request, redirect, url_for, render_template, abort
 from setup_db import execute_query
 from sqlite3 import IntegrityError
+from classes import Student, Course, Teacher, User, Grade
+
 # from collections import namedtuple
 
 app = Flask(__name__)
@@ -55,19 +58,61 @@ def authenticate(email, password):
         return role[0][0]
 
 
+@app.route('/teachers')
+def teachers():
+    teachers = execute_query("SELECT * FROM teachers")
+    return render_template("teachers.html", teachers=teachers)
+
+
+def get_teacher_name(id):
+    t_name = [t_name[0] for t_name in execute_query(f"SELECT name FROM teachers WHERE id={id}")]
+    return t_name[0]
+
+
+def get_courses(teacher_id):
+    courses = [Course(id=course[0], name=course[1]) for course in execute_query(f"SELECT id,name FROM courses WHERE teacher_id={teacher_id}")]
+    return courses
+
+
+def get_grades(course_id):
+    grades = [Grade(student_name=detail[0], student_grade=detail[1]) for detail in execute_query(f"""SELECT students.name,students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}""")]
+    return grades
+
+
+@app.route('/teacher/<teacher_id>', methods=['GET', 'POST'])
+def teacher(teacher_id):
+    grades = []
+    for course in get_courses(teacher_id):
+        grades.append(get_grades(course.id))
+    return render_template("teacher.html")
+
+
 @app.route('/results', methods=['GET', 'POST'])
 def results():
     str, link, log = navbar_auth()
-    searchbox = request.args['searchbox']
-    result = f"This is what I have found for '{searchbox}'"
+    search = request.args['search']
+    result = f"This is what I have found for '{search}'"
     div = """<div class="message">"""
     div_ = "</div>"
-    if searchbox == '':
+    if search == '':
         return render_template("results.html", result=result, div=div, div_=div_)
     else:
-        courses = execute_query(f"SELECT * FROM courses WHERE name LIKE '%{searchbox}%'")
-        students = execute_query(f"SELECT * FROM students WHERE name LIKE '%{searchbox}%'")
-        return render_template("results.html", courses=courses, students=students, result=result, div=div, div_=div_, link=link, log=log)
+        db_courses = crud.read_by_like("courses", search)
+        db_students = crud.read_by_like("students", search)
+        db_teachers = crud.read_by_like("teachers", search)
+        courses = []
+        students = []
+        teachers = []
+        for id, name, desc, t_id in db_courses:
+            course = Course(id, name, desc, t_id)
+            courses.append(course)
+        for id, name, email, phone in db_students:
+            student = Course(id, name, email, phone)
+            students.append(student)
+        for id, name, email in db_teachers:
+            teacher = Teacher(id, name, email)
+            teachers.append(teacher)
+        return render_template("results.html", courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, link=link, log=log)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -96,21 +141,31 @@ def students():
     if request.method == 'POST':
         # FORM1 : ADD STUDENT
         if "form-submit" in request.form:
-            student_name = request.form["s_name"].title()
-            student_email = request.form["s_email"]
-            execute_query(f"INSERT INTO students VALUES(NULL,'{student_name}','{student_email}')")
+            try:
+                s_name = request.form["s_name"].title()
+                s_email = request.form["s_email"]
+                s_phone = request.form["s_phone"]
+                crud.insert_students(s_name, s_email, s_phone)
+                crud.insert_users(s_email, '12345678', 'student')
+                return redirect(url_for('students'))
+            except IntegrityError:
+                return abort(422)
         # FORM2 : ASSOCIATE STUDENT
         elif "form2-submit" in request.form:
-            student_name = request.form["s_name"].title()
-            student_email = request.form["s_email"]
-            course_name = request.form["c_name"]
-            student_id = [s_id[0] for s_id in execute_query(
-                f"SELECT id FROM students WHERE name='{student_name}'")]
-            course_id = [c_id[0] for c_id in execute_query(
-                f"SELECT id FROM courses WHERE name='{course_name}'")]
-            execute_query(
-                f"INSERT INTO students_courses VALUES (NULL, '{student_id[0]}', '{course_id[0]}')")
-        return redirect(url_for('students'))
+            try:
+                s_name = request.form["s_name"].title()
+                s_email = request.form["s_email"]
+                c_name = request.form["c_name"]
+                student_details = crud.read_by_name("students", s_name)
+                for id, name, email, phone in student_details:
+                    student = Student(id, name, email, phone)
+                course_details = crud.read_by_name("courses", c_name)
+                for id, name, desc, t_id in course_details:
+                    course = Course(id, name, desc, t_id)
+                crud.insert_students_courses(student.id, course.id, 'NULL')
+                return redirect(url_for('students'))
+            except IntegrityError:
+                return abort(422)
     return render_template("students.html", students=students, link=link, log=log)
 
 
@@ -177,19 +232,3 @@ def update(student_id):
         return redirect(url_for("profile", student_id=student_id))
     else:
         return render_template("update.html", link=link, log=log, student_id=student_id)
-
-
-@app.route('/register/<student_id>/<course_id>')
-def register(student_id, course_id):
-    try:
-        execute_query(
-            f"INSERT INTO students_courses (student_id, course_id) VALUES ('{student_id}', '{course_id}')")
-    except IntegrityError:
-        return f"{student_id} is already registered to {course_id}"
-    return redirect(url_for('registrations', student_id=student_id))
-
-
-@app.route('/course_name/<id>')
-def course(id):
-    name = execute_query(f"SELECT name FROM courses WHERE id={id}")
-    return json.dumps(name)
