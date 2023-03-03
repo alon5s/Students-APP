@@ -63,30 +63,22 @@ def teachers():
     teachers = execute_query("SELECT * FROM teachers")
     return render_template("teachers.html", teachers=teachers)
 
-
-def get_teacher_name(id):
-    t_name = [t_name[0] for t_name in execute_query(f"SELECT name FROM teachers WHERE id={id}")]
-    return t_name[0]
-
-
-def get_courses(teacher_id):
-    courses = [Course(id=course[0], name=course[1]) for course in execute_query(
-        f"SELECT id,name FROM courses WHERE teacher_id={teacher_id}")]
-    return courses
+def get_courses():
+    courses=execute_query("SELECT id, name FROM courses")
+    return [Course(*course) for course in courses]
 
 
 def get_grades(course_id):
-    grades = [Grade(student_name=detail[0], student_grade=detail[1]) for detail in execute_query(
-        f"""SELECT students.name,students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}""")]
-    return grades
+    grades=execute_query(f"SELECT students.name, students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}")
+    return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
 
 
-@app.route('/teacher/<teacher_id>', methods=['GET', 'POST'])
-def teacher(teacher_id):
-    grades = []
-    for course in get_courses(teacher_id):
-        grades.append(get_grades(course.id))
-    return render_template("teacher.html")
+@app.route('/grades/')
+def grades():
+    grades_courses={}
+    for course in get_courses():
+        grades_courses[course.name]=get_grades(course.id)
+    return render_template("grades.html", grades_courses=grades_courses)
 
 
 @app.route('/results', methods=['GET', 'POST'])
@@ -99,9 +91,9 @@ def results():
     if search == '':
         return render_template("results.html", result=result, div=div, div_=div_)
     else:
-        db_courses = crud.read_by_like("courses", search)
-        db_students = crud.read_by_like("students", search)
-        db_teachers = crud.read_by_like("teachers", search)
+        db_courses = crud.read_by_like("*", "courses", "name", search)
+        db_students = crud.read_by_like("*", "students", "name", search)
+        db_teachers = crud.read_by_like("*", "teachers", "name", search)
         courses = []
         students = []
         teachers = []
@@ -148,22 +140,37 @@ def attendance():
 
 @app.route('/attendance/<c_id>', methods=['GET', 'POST'])
 def course_attendance(c_id):
+    str, link, log = navbar_auth()
     c_name = execute_query(f"SELECT name FROM courses WHERE id={c_id}")
     c_name = c_name[0][0].title()
     today_date = datetime.date.today()
     s_ids = [s_id[0] for s_id in execute_query(f"SELECT student_id FROM students_courses WHERE course_id={c_id}")]
     students = []
     for s_id in s_ids:
-        s_details = crud.read_by_id("students", s_id)
+        s_details = crud.read_where("*", "students", "id", s_id)
         for id, name, email, phone in s_details:
             student = Student(id, name, email, phone)
             students.append(student)
+    db_attendance = crud.read_where("student_id, attendance", "attendances", "course_id", c_id)
+    att = ''
+    yes = ''
+    no = ''
+    if db_attendance != []:
+        for detail in db_attendance:
+            student_id_db_attendance = detail[0]
+            att = detail[1]
+            if att == 'no':
+                no = 'checked'
+                yes = ''
+            elif att == 'yes':
+                yes = 'checked'
+                no = ''
     if request.method == 'POST':
         attendance = request.form["attendance"]
         form_s_id = request.form["s_id"]
         crud.insert("attendances", "student_id, course_id, date, attendance", f"'{form_s_id}','{c_id}','{today_date}','{attendance}'")
         return redirect(url_for('course_attendance', c_id=c_id))
-    return render_template("c_attendance.html", students=students, today_date=today_date, c_name=c_name)
+    return render_template("c_attendance.html", link=link, log=log, students=students, today_date=today_date, c_name=c_name, yes=yes, no=no)
 
 
 @app.route('/students', methods=['GET', 'POST'])
@@ -177,10 +184,8 @@ def students():
                 s_name = request.form["s_name"].title()
                 s_email = request.form["s_email"]
                 s_phone = request.form["s_phone"]
-                columns = "name, email, phone"
-                values = f"{s_name},{s_email},{s_phone}"
                 crud.insert("students", "name, email, phone", f"'{s_name}','{s_email}','{s_phone}'")
-                crud.insert_users(s_email, '12345678', 'student')
+                crud.insert("users", "email,password,role", f"'{s_email}','12345678','student'")
                 return redirect(url_for('students'))
             except IntegrityError:
                 return abort(422)
@@ -196,7 +201,7 @@ def students():
                 course_details = crud.read_by_name("courses", c_name)
                 for id, name, desc, t_id in course_details:
                     course = Course(id, name, desc, t_id)
-                crud.insert_students_courses(student.id, course.id, 'NULL')
+                crud.insert("students_courses", "student_id,course_id,grade", f"'{student.id}', '{course.id}', 'NULL'")
                 return redirect(url_for('students'))
             except IntegrityError:
                 return abort(422)

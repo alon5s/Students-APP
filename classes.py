@@ -42,11 +42,11 @@ class User:
 
 
 class Grade:
-    def __init__(self, student_name: str = "default", student_grade: int = 0) -> None:
-        self.student_name = student_name
-        self.student_grade = student_grade
-        if self.student_grade is None:
-            self.student_grade = 0
+    def __init__(self, name: str = "default", grade: int = 0) -> None:
+        self.name = name
+        self.grade = grade
+        if self.grade is None:
+            self.grade = 0
 
     def __repr__(self) -> str:
-        return f'{self.student_name},{self.student_grade}'
+        return f'{self.name},{self.grade}'

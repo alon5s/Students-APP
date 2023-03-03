@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% for course_name in grades_courses %}
+    {{ course_name}}<p>
+    {% for grade in grades_courses[course_name] %}
+        --- {{ grade.name }} - {{ grade.grade }}<p>
+    {% endfor %}
+{% endfor %}
+
+{% endblock %}

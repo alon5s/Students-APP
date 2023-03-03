@@ -68,9 +68,13 @@ def create_tables():
     """)
 
 
-def create_fake_data(students_num=40, teachers_num=4):
+def create_fake_data(students_num=40, teachers_num=4, ):
     fake = faker.Faker()
     default_password = 12345678
+    i = 0
+    for student in range(students_num):
+        i += 1
+        execute_query(f"""INSERT INTO students_courses (student_id,course_id,grade) VALUES ({i},{random.randint(1,4)},{random.randint(55,100)})""")
     for student in range(students_num):
         student = {"name": fake.name(), "email": fake.email()}
         execute_query(f"""INSERT INTO students (name,email) VALUES ('{student["name"]}','{student["email"]}')""")
@@ -79,7 +83,7 @@ def create_fake_data(students_num=40, teachers_num=4):
         teacher = {"name": fake.name(), "email": fake.email()}
         execute_query(f"""INSERT INTO teachers (name,email) VALUES ('{teacher["name"]}','{teacher["email"]}')""")
         execute_query(f"""INSERT INTO users (email,password,role) VALUES ('{teacher["email"]}','{default_password}','teacher')""")
-    courses = ['python', 'javascript']
+    courses = ['python', 'javascript', 'html', 'css']
     for course_name in courses:
         teacher_ids = [tup[0] for tup in execute_query("SELECT id FROM teachers")]
         execute_query(f"INSERT INTO courses (name, teacher_id) VALUES ('{course_name}','{random.choice(teacher_ids)}')")
