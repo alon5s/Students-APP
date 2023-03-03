@@ -55,6 +55,17 @@ def create_tables():
             FOREIGN KEY (email) REFERENCES students (email)
         )
     """)
+    execute_query("""
+    CREATE TABLE IF NOT EXISTS attendances (
+        id INTEGER PRIMARY KEY,
+        student_id INTEGER,
+        course_id INTEGER,
+        date TEXT,
+        attendance TEXT,
+        FOREIGN KEY (student_id) REFERENCES students (id),
+        FOREIGN KEY (course_id) REFERENCES courses (id)
+    )
+    """)
 
 
 def create_fake_data(students_num=40, teachers_num=4):

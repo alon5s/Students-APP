@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="headline">Attendance:</h1>
+{% for course in courses %}
+<a class="headline" href="/attendance/{{course.id}}">{{ course.name }}</a>
+<br><br>
+{% endfor %}
+{% endblock content %}

@@ -4,7 +4,7 @@ from flask import Flask, session, request, redirect, url_for, render_template, a
 from setup_db import execute_query
 from sqlite3 import IntegrityError
 from classes import Student, Course, Teacher, User, Grade
-
+import datetime
 # from collections import namedtuple
 
 app = Flask(__name__)
@@ -70,12 +70,14 @@ def get_teacher_name(id):
 
 
 def get_courses(teacher_id):
-    courses = [Course(id=course[0], name=course[1]) for course in execute_query(f"SELECT id,name FROM courses WHERE teacher_id={teacher_id}")]
+    courses = [Course(id=course[0], name=course[1]) for course in execute_query(
+        f"SELECT id,name FROM courses WHERE teacher_id={teacher_id}")]
     return courses
 
 
 def get_grades(course_id):
-    grades = [Grade(student_name=detail[0], student_grade=detail[1]) for detail in execute_query(f"""SELECT students.name,students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}""")]
+    grades = [Grade(student_name=detail[0], student_grade=detail[1]) for detail in execute_query(
+        f"""SELECT students.name,students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}""")]
     return grades
 
 
@@ -134,6 +136,36 @@ def logout():
     return redirect(url_for('home'))
 
 
+@app.route('/attendance')
+def attendance():
+    db_courses = crud.read("courses")
+    courses = []
+    for id, name, desc, t_id in db_courses:
+        course = Course(id, name, desc, t_id)
+        courses.append(course)
+    return render_template("attendance.html", courses=courses)
+
+
+@app.route('/attendance/<c_id>', methods=['GET', 'POST'])
+def course_attendance(c_id):
+    c_name = execute_query(f"SELECT name FROM courses WHERE id={c_id}")
+    c_name = c_name[0][0].title()
+    today_date = datetime.date.today()
+    s_ids = [s_id[0] for s_id in execute_query(f"SELECT student_id FROM students_courses WHERE course_id={c_id}")]
+    students = []
+    for s_id in s_ids:
+        s_details = crud.read_by_id("students", s_id)
+        for id, name, email, phone in s_details:
+            student = Student(id, name, email, phone)
+            students.append(student)
+    if request.method == 'POST':
+        attendance = request.form["attendance"]
+        form_s_id = request.form["s_id"]
+        crud.insert("attendances", "student_id, course_id, date, attendance", f"'{form_s_id}','{c_id}','{today_date}','{attendance}'")
+        return redirect(url_for('course_attendance', c_id=c_id))
+    return render_template("c_attendance.html", students=students, today_date=today_date, c_name=c_name)
+
+
 @app.route('/students', methods=['GET', 'POST'])
 def students():
     str, link, log = navbar_auth()
@@ -145,7 +177,9 @@ def students():
                 s_name = request.form["s_name"].title()
                 s_email = request.form["s_email"]
                 s_phone = request.form["s_phone"]
-                crud.insert_students(s_name, s_email, s_phone)
+                columns = "name, email, phone"
+                values = f"{s_name},{s_email},{s_phone}"
+                crud.insert("students", "name, email, phone", f"'{s_name}','{s_email}','{s_phone}'")
                 crud.insert_users(s_email, '12345678', 'student')
                 return redirect(url_for('students'))
             except IntegrityError:

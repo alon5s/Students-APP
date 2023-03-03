@@ -9,8 +9,16 @@ def query_db(sql_query):
         return cur.fetchall()
 
 
+def read(table):
+    return query_db(f"SELECT * FROM {table}")
+
+
 def insert_students(name, email, phone):
     query_db(f"INSERT INTO students VALUES (NULL, '{name}', '{email}', '{phone}');")
+
+
+def insert(table, columns, values):
+    query_db(f"INSERT INTO {table} ({columns}) VALUES ({values})")
 
 
 def insert_teachers(name, email):
@@ -23,10 +31,6 @@ def insert_users(email, password, role):
 
 def insert_students_courses(s_id, c_id, grade):
     query_db(f"INSERT INTO students_courses VALUES (NULL, '{s_id}', '{c_id}', '{grade}');")
-
-
-def read(table):
-    return query_db(f"SELECT * FROM {table}")
 
 
 def read_by_id(table, id):

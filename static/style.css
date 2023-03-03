@@ -28,6 +28,20 @@ body {
     padding-top: 2px;
 }
 
+.attendance_containter{
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   width: max-content;
+}
+
+.check_attendance{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: baseline;
+}
+
 .logout {
     float: right;
     border: none;

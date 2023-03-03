@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="headline">Attendance For {{ c_name }}</h1>
+<a class="headline">Date: {{ today_date }}</a>
+<br><br>
+{% for student in students %}
+<form class="attendance_containter" method="post">
+    <div class="check_attendance">
+        <div class style="width:200px">{{ student.name }}</div>
+        <input type="hidden" name="s_id" value="{{student.id}}"/>
+        Yes
+        <input type="radio" name="attendance" value="yes" />
+        No
+        <input type="radio" name="attendance" value="no" />
+        <input type="submit" value="Set"/>
+        <br><br>
+    </div>
+</form>
+{% endfor %}
+{% endblock content %}
