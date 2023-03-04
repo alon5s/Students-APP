@@ -62,6 +62,7 @@ def create_tables():
         course_id INTEGER,
         date TEXT,
         attendance TEXT,
+        UNIQUE (student_id, course_id, date),
         FOREIGN KEY (student_id) REFERENCES students (id),
         FOREIGN KEY (course_id) REFERENCES courses (id)
     )

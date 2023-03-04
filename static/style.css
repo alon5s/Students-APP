@@ -3,6 +3,22 @@
     display: inline-block;
     background-color: rgb(39, 39, 39);
     border-radius: 10px;
+    padding: 3px;
+}
+
+.admin-navbar {
+    display: block;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li a {
+    display: block;
+    width: 60px;
 }
 
 body {
@@ -28,18 +44,19 @@ body {
     padding-top: 2px;
 }
 
-.attendance_containter{
-   display: flex;
-   flex-direction: column;
-   gap: 10px;
-   width: max-content;
+.attendance_containter {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: max-content;
 }
 
-.check_attendance{
+.check_attendance {
     display: flex;
     justify-content: space-between;
     flex-direction: row;
     align-items: baseline;
+    width: ;
 }
 
 .logout {
