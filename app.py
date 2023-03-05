@@ -151,6 +151,13 @@ def course_attendance(c_id):
             return redirect(url_for('course_attendance', c_id=c_id))
 
 
+@app.route('/h_att', methods=['GET', 'POST'])
+def h_att():
+    date = request.form["date"]
+    attendances = crud.read_whereX2("*", "attendances", "date", f"'{date}'")
+    return f"{attendances}"
+
+
 @app.route('/students', methods=['GET', 'POST'])
 def students():
     str, link, log = navbar_auth()

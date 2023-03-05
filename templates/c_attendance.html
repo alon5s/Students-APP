@@ -8,9 +8,9 @@
     <div class="check_attendance">
         <div class style="width:200px">{{ student.name[0][0] }}</div>
         <input type="hidden" name="s_id" value="{{student.id}}">
-        Yes<input type="radio" name="attendance" value="yes" checked>
+        Yes<input type="radio" name="attendance" value="yes">
         No<input type="radio" name="attendance" value="no">
-        <input type="submit" value="Set">
+        <input class="fill-press" type="submit" value="Set">
         <br><br>
     </div>
 </form>
@@ -22,9 +22,15 @@
         <input type="hidden" name="s_id" value="{{student.id}}" />
         Yes<input type="radio" name="attendance" value="yes" {{student.attend.yes}} />
         No<input type="radio" name="attendance" value="no" {{student.attend.no}} />
-        <input type="submit" value="Set" />
+        <input class="fill-press" type="submit" value="Set"/>
         <br><br>
     </div>
 </form>
 {% endfor %}
+
+<form class="" action="/h_att" method="post">
+    Choose Date:
+    <input class="fill-press" type="date" name="date">
+    <input class="fill-press" type="submit" value="Watch">
+</form>
 {% endblock %}
