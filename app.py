@@ -94,15 +94,16 @@ def teachers():
     return render_template("teachers.html", link=link, log=log, teachers=teachers)
 
 
-@app.route('/attendance')
+@app.route('/attendance', methods=['GET', 'POST'])
 def attendance():
-    str, link, log = navbar_auth()
-    db_courses = crud.read("courses")
-    courses = []
-    for id, name, desc, t_id in db_courses:
-        course = Course(id, name, desc, t_id)
-        courses.append(course)
-    return render_template("attendance.html", link=link, log=log, courses=courses)
+    if request.method == 'GET':
+        str, link, log = navbar_auth()
+        db_courses = crud.read("courses")
+        courses = []
+        for id, name, desc, t_id in db_courses:
+            course = Course(id, name, desc, t_id)
+            courses.append(course)
+        return render_template("attendance.html", link=link, log=log, courses=courses)
 
 
 @app.route('/attendance/<c_id>', methods=['GET', 'POST'])

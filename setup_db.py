@@ -69,7 +69,7 @@ def create_tables():
     """)
 
 
-def create_fake_data(students_num=40, teachers_num=4, ):
+def create_fake_data(students_num=40, teachers_num=4):
     fake = faker.Faker()
     default_password = 12345678
     i = 0
