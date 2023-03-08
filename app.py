@@ -110,6 +110,7 @@ def course_attendance(c_id):
     str, link, log = navbar_auth()
     c_name = execute_query(f"SELECT name FROM courses WHERE id={c_id}")
     c_name = c_name[0][0].title()
+    # today_date = "2023-03-10"
     today_date = datetime.date.today()
     if request.method == 'GET':
         students_ids = crud.read_where('student_id', 'students_courses', 'course_id', c_id)
@@ -126,11 +127,20 @@ def course_attendance(c_id):
                     student.name = crud.student_name(s[0])
                     student.id = s[0]
                     students_names_ids.append(student)
-                return render_template('c_attendance.html', link=link, log=log, c_name=c_name, today_date=today_date, c_id=c_id, students=students_names_ids)
+                return render_template("c_attendance.html", link=link, log=log, c_id=c_id, c_name=c_name, today_date=today_date, students=students_names_ids)
             else:
-                course_atten = crud.read_whereX2('student_id, attendance', 'attendances', 'course_id', c_id, 'date', f"'{today_date}'")
+                students_ids_attend = crud.read_whereX2('student_id', 'attendances', 'course_id', c_id, 'date', f"'{today_date}'")
+                if len(students_ids) == len(students_ids_attend):
+                    pass
+                else:
+                    for s_i in students_ids:
+                        if s_i in students_ids_attend:
+                            pass
+                        else:
+                            crud.insert('attendances', 'student_id, course_id, date', f"'{s_id[0]}', '{c_id}', '{today_date}'")
+                course_attend = crud.read_whereX2('student_id, attendance', 'attendances', 'course_id', c_id, 'date', f"'{today_date}'")
                 students_attend = []
-                for s_a in course_atten:
+                for s_a in course_attend:
                     student_a = namedtuple('S_Attend', ['id', 'name', 'attend'])
                     student_a.id = s_a[0]
                     student_a.name = crud.student_name(s_a[0])
@@ -138,17 +148,16 @@ def course_attendance(c_id):
                     if s_a[1] == 'yes':
                         student_a.attend['yes'] = 'checked'
                         student_a.attend['no'] = ''
-                    else:
+                    elif s_a[1] == 'no':
                         student_a.attend['yes'] = ''
                         student_a.attend['no'] = 'checked'
                     students_attend.append(student_a)
-                return render_template('c_attendance.html', link=link, log=log, c_name=c_name, today_date=today_date, c_id=c_id, students_attend=students_attend)
-    else:
-        if request.method == 'POST':
-            answer = request.form["attendance"]
-            student_id = request.form["s_id"]
-            crud.update_attend('attendances', 'attendance', f"'{answer}'", 'student_id', student_id, 'course_id', c_id, 'date', f"'{today_date}'")
-            return redirect(url_for('course_attendance', c_id=c_id))
+        return render_template('c_attendance.html', link=link, log=log, today_date=today_date, c_name=c_name, c_id=c_id, students_attend=students_attend)
+    if request.method == 'POST':
+        answer = request.form["attendance"]
+        student_id = request.form["s_id"]
+        crud.update_attend('attendances', 'attendance', f"'{answer}'", 'student_id', student_id, 'course_id', c_id, 'date', f"'{today_date}'")
+        return redirect(url_for('course_attendance', c_id=c_id))
 
 
 @app.route('/h_att/<c_id>', methods=['GET', 'POST'])
