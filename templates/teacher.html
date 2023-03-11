@@ -1,20 +1,18 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1 class="headline">Welcome {{ t_name[0][0] }}</h1>
-<h2 class="headline">Your Courses:</h2>
-{% for c in courses %}
-<h3 class="headline">{{ c[1] }}</h3>
-<h3 class="headline">Students:</h3>
-    {% for name in students_names %}
-        {{ name }}
-        {% for grade in grades %}
-            <form action="" method="post">
-                <input class="fill-press" type="text" placeholder="{{ grade }}" name="grade">
-                    <input class="fill-press" type="submit" value="Update">
-            </form>
-        {% endfor %}
-        <br><br>
-    {% endfor %}
-    <br><br>
+{% for course_name in grades_courses %}
+<h3 class="headline">Course {{course_name.title()}}:</h3>
+{% for grade in grades_courses[course_name] %}
+<form class="ns_gs_container" action="" method="post">
+    <div class="g_update">
+        <div class style="width:200px">{{ grade.name }}</div>
+        <input class="fill-press" type="text" placeholder="{{grade.grade}}" name="grade">
+        <input type="hidden" value="{{grade.name}}" name="s_name">
+        <input type="hidden" value="{{course_name}}" name="c_name">
+        <input class="fill-press" type="submit" value="Update">
+    </div>
+</form>
+{% endfor %}
 {% endfor %}
 {% endblock content %}

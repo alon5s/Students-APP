@@ -87,13 +87,6 @@ def admin():
     return render_template("admin.html", link=link, log=log)
 
 
-@app.route('/teachers')
-def teachers():
-    str, link, log = navbar_auth()
-    teachers = execute_query("SELECT * FROM teachers")
-    return render_template("teachers.html", link=link, log=log, teachers=teachers)
-
-
 @app.route('/attendance', methods=['GET', 'POST'])
 def attendance():
     if request.method == 'GET':
@@ -111,7 +104,6 @@ def course_attendance(c_id):
     str, link, log = navbar_auth()
     c_name = execute_query(f"SELECT name FROM courses WHERE id={c_id}")
     c_name = c_name[0][0].title()
-    # today_date = "2023-03-10"
     today_date = datetime.date.today()
     if request.method == 'GET':
         students_ids = crud.read_where('student_id', 'students_courses', 'course_id', c_id)
@@ -157,22 +149,29 @@ def course_attendance(c_id):
     if request.method == 'POST':
         answer = request.form["attendance"]
         student_id = request.form["s_id"]
-        crud.update_attend('attendances', 'attendance', f"'{answer}'", 'student_id', student_id, 'course_id', c_id, 'date', f"'{today_date}'")
+        crud.update_attend(f"'{answer}'", student_id, c_id, f"'{today_date}'")
         return redirect(url_for('course_attendance', c_id=c_id))
 
 
 @app.route('/h_att/<c_id>', methods=['GET', 'POST'])
 def h_att(c_id):
+    str, link, log = navbar_auth()
     date = request.args["date"]
     db_attendances = crud.read_whereX2("student_id, attendance", "attendances", "course_id", c_id, "date", f"'{date}'")
-    students = []
-    for student_id, attendance in db_attendances:
-        student = namedtuple('student', ['id', 'name', 'att'])
-        student.id = student_id
-        student.name = crud.student_name(student_id)
-        student.att = attendance
-        students.append(student)
-    return render_template("h_att.html", students=students, date=date)
+    if len(db_attendances) == 0:
+        note = "Attendance hasn't been filled in this date"
+        return render_template("h_att.html", date=date, link=link, log=log, note=note)
+    else:
+        h1 = "Name"
+        h2 = "Attendance"
+        students = []
+        for student_id, attendance in db_attendances:
+            student = namedtuple('student', ['id', 'name', 'att'])
+            student.id = student_id
+            student.name = crud.student_name(student_id)
+            student.att = attendance
+            students.append(student)
+        return render_template("h_att.html", students=students, date=date, link=link, log=log, h1=h1, h2=h2)
 
 
 @app.route('/students', methods=['GET', 'POST'])
@@ -259,44 +258,46 @@ def profile(student_id):
     return render_template("profile.html", student_details=student_details, course_names=course_names, link=link, log=log, student_id=student_id)
 
 
-@app.route('/teacher/<teacher_id>')
-def teacher_profile(teacher_id):
+@app.route('/teachers')
+def teachers():
     str, link, log = navbar_auth()
-    t_name = crud.teacher_name(teacher_id)
-    course_details = crud.read_where("id,name", "courses", "teacher_id", teacher_id)
-    courses = []
-    for id, name in course_details:
-        course = Course(id, name)
-        courses.append(course)
-    students_names = []
-    grades = []
-    for c in courses:
-        db_students_ids_grades = crud.read_where("student_id,grade", "students_courses", "course_id", course.id)
-        for id, grade in db_students_ids_grades:
-            student_id = Student(id)
-            db_grade = Grade(grade)
-            grades.append(db_grade.grade)
-            student_name = crud.student_name(student_id.id)
-            students_names.append(student_name[0][0])
-    return render_template("teacher.html", link=link, log=log, t_name=t_name, courses=courses, students_names=students_names)
+    teachers = execute_query("SELECT * FROM teachers")
+    return render_template("teachers.html", link=link, log=log, teachers=teachers)
 
 
-def get_courses():
-    courses = execute_query("SELECT id, name FROM courses")
+@app.route('/teacher/<teacher_id>', methods=['GET', 'POST'])
+def teacher_profile(teacher_id):
+    if request.method == 'GET':
+        str, link, log = navbar_auth()
+        t_name = crud.teacher_name(teacher_id)
+        course_details = crud.read_where("id,name", "courses", "teacher_id", teacher_id)
+        courses = []
+        for id, name in course_details:
+            course = Course(id, name)
+            courses.append(course)
+        grades_courses = {}
+        for course in courses:
+            for course in get_course(course.id):
+                grades_courses[course.name] = get_grades(course.id)
+        return render_template("teacher.html", grades_courses=grades_courses, link=link, log=log, t_name=t_name, courses=courses)
+    elif request.method == 'POST':
+        grade = request.form['grade']
+        s_name = request.form['s_name']
+        c_name = request.form['c_name']
+        s_id = crud.read_where("id", "students", "name", f"'{s_name}'")
+        c_id = crud.read_where("id", "courses", "name", f"'{c_name}'")
+        crud.update_grade(grade, s_id[0][0], c_id[0][0])
+        return redirect(url_for("teacher_profile", teacher_id=teacher_id))
+
+
+def get_course(course_id):
+    courses = execute_query(f"SELECT id, name FROM courses WHERE id={course_id}")
     return [Course(*course) for course in courses]
 
 
 def get_grades(course_id):
     grades = execute_query(f"SELECT students.name, students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}")
     return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
-
-
-@app.route('/grades/')
-def grades():
-    grades_courses = {}
-    for course in get_courses():
-        grades_courses[course.name] = get_grades(course.id)
-    return render_template("grades.html", grades_courses=grades_courses)
 
 
 @app.route('/update/<int:student_id>', methods=['GET', 'POST'])
@@ -319,25 +320,60 @@ def update(student_id):
 def results():
     str, link, log = navbar_auth()
     search = request.args['search']
+    c_check = request.args.get('c')
+    s_check = request.args.get('s')
+    t_check = request.args.get('t')
+    c_note = "Courses:"
+    s_note = "Students:"
+    t_note = "Teachers:"
     result = f"This is what I have found for '{search}'"
     div = """<div class="message">"""
     div_ = "</div>"
     if search == '':
         return render_template("results.html", result=result, div=div, div_=div_)
     else:
-        db_courses = crud.read_by_like("*", "courses", "name", search)
-        db_students = crud.read_by_like("*", "students", "name", search)
-        db_teachers = crud.read_by_like("*", "teachers", "name", search)
-        courses = []
-        students = []
-        teachers = []
-        for id, name, desc, t_id in db_courses:
-            course = Course(id, name, desc, t_id)
-            courses.append(course)
-        for id, name, email, phone in db_students:
-            student = Course(id, name, email, phone)
-            students.append(student)
-        for id, name, email in db_teachers:
-            teacher = Teacher(id, name, email)
-            teachers.append(teacher)
-        return render_template("results.html", courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, link=link, log=log)
+        if c_check != "c" and s_check != "s" and t_check != "t":
+            db_courses = crud.read_by_like("*", "courses", "name", search)
+            courses = []
+            for id, name, desc, t_id in db_courses:
+                course = Course(id, name, desc, t_id)
+                courses.append(course)
+            db_students = crud.read_by_like("*", "students", "name", search)
+            students = []
+            for id, name, email, phone in db_students:
+                student = Course(id, name, email, phone)
+                students.append(student)
+            db_teachers = crud.read_by_like("*", "teachers", "name", search)
+            teachers = []
+            for id, name, email in db_teachers:
+                teacher = Teacher(id, name, email)
+                teachers.append(teacher)
+            return render_template("results.html", t_note=t_note, s_note=s_note, c_note=c_note, courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, link=link, log=log)
+        if c_check == 'c':
+            db_courses = crud.read_by_like("*", "courses", "name", search)
+            courses = []
+            for id, name, desc, t_id in db_courses:
+                course = Course(id, name, desc, t_id)
+                courses.append(course)
+        else:
+            courses = []
+            c_note = ""
+        if s_check == 's':
+            db_students = crud.read_by_like("*", "students", "name", search)
+            students = []
+            for id, name, email, phone in db_students:
+                student = Course(id, name, email, phone)
+                students.append(student)
+        else:
+            students = []
+            s_note = ""
+        if t_check == 't':
+            db_teachers = crud.read_by_like("*", "teachers", "name", search)
+            teachers = []
+            for id, name, email in db_teachers:
+                teacher = Teacher(id, name, email)
+                teachers.append(teacher)
+        else:
+            t_note = ""
+            teachers = []
+        return render_template("results.html", t_note=t_note, s_note=s_note, c_note=c_note, courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, link=link, log=log)

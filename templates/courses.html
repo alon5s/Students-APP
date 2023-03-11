@@ -16,10 +16,8 @@
         <br>
         <input class="fill-press" type="text" placeholder="Course Name.." name="course">
         <br><br>
-        <label for="teacher">Choose a Teacher:</label>
-        <br>
         <select class="fill-press" name="teacher">
-            <option></option>
+            <option>Choose A Teacher..</option>
             {% for teacher in teachers %}
             <option value="{{ teacher }}">{{ teacher }}</option>
             {% endfor %}

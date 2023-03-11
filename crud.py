@@ -41,5 +41,9 @@ def delete(table, task_id):
     query_db(f"DELETE FROM {table} WHERE id={task_id}")
 
 
-def update_attend(table, column0, value0, column1, value1, column2, value2, column3, value3):
-    query_db(f"UPDATE {table} SET {column0}={value0} WHERE {column1}={value1} AND {column2}={value2} AND {column3}={value3};")
+def update_grade(grade, s_id, c_id):
+    query_db(f"UPDATE students_courses SET grade={grade} WHERE student_id={s_id} AND course_id={c_id};")
+
+
+def update_attend(value0, value1, value2, value3):
+    query_db(f"UPDATE attendances SET attendance={value0} WHERE student_id={value1} AND course_id={value2} AND date={value3};")

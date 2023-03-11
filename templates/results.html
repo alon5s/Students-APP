@@ -4,17 +4,28 @@
 <div class="message">
     {{ result }}
 </div>
-<br>
-{% for course in courses %}
-<a href="/course/{{course.id}}">{{ course.name }}</a>
-<br>
-{% endfor %}
-{% for student in students %}
-<a href="/profile/{{student.id}}">{{ student.name }}</a>
-<br>
-{% endfor %}
-{% for teacher in teachers %}
-<a href="/teacher/{{teacher.id}}">{{ teacher.name }}</a>
-<br>
-{% endfor %}
+<div class="results">
+    <div class="result">
+        <br>
+        <h3 class="headline2">{{c_note}}</h3>
+        {% for course in courses %}
+        <a href="/course/{{course.id}}">{{ course.name }}</a>
+        {% endfor %}
+    </div>
+    <div class="result">
+        <br>
+        <h3 class="headline2">{{s_note}}</h3>
+        {% for student in students %}
+        <a href="/profile/{{student.id}}">{{ student.name }}</a>
+        {% endfor %}
+    </div>
+    <div class="result">
+        <br>
+        <h3 class="headline2">{{t_note}}</h3>
+        {% for teacher in teachers %}
+        <a href="/teacher/{{teacher.id}}">{{ teacher.name }}</a>
+
+        {% endfor %}
+    </div>
+</div>
 {% endblock content %}
