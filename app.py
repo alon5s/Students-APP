@@ -37,6 +37,15 @@ def home():
     return render_template("home.html", courses=courses, str=str, link=link, log=log)
 
 
+@app.route('/message')
+def message():
+    string = crud.read("messages")
+    messages = []
+    for s in string:
+        messages.append(s[1])
+    return messages
+
+
 def navbar_auth():
     if session["role"] != 'Guest':
         if session["role"] == 'admin':
@@ -81,10 +90,13 @@ def logout():
     return redirect(url_for('home'))
 
 
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    str, link, log = navbar_auth()
-    return render_template("admin.html", link=link, log=log)
+    if request.method == 'POST':
+        message = request.form["message"]
+    else:
+        str, link, log = navbar_auth()
+        return render_template("admin.html", link=link, log=log)
 
 
 @app.route('/attendance', methods=['GET', 'POST'])
