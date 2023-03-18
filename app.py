@@ -1,21 +1,22 @@
 import json
+import os
 import crud
+import datetime
 from flask import Flask, session, request, redirect, url_for, render_template, abort
 from setup_db import execute_query
 from sqlite3 import IntegrityError
 from classes import Student, Course, Teacher, User, Grade
-import datetime
 from collections import namedtuple
 
 app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-
+app.secret_key = os.urandom(32)
 
 @app.before_request
 def auth():
     if "role" not in session.keys():
         session["role"] = "Guest"
         session["email"] = "guest@gmail.com"
+        session["id"] = 0
     if session["role"] != 'admin':
         if "admin" in request.full_path:
             return abort(403)
@@ -40,6 +41,7 @@ def auth():
     if session["role"] == 'teacher':
         if "profile/" in request.full_path:
             return abort(403)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -322,7 +324,10 @@ def teacher_profile(teacher_id):
         for course in courses:
             for course in get_course(course.id):
                 grades_courses[course.name] = get_grades(course.id)
-        return render_template("teacher.html", grades_courses=grades_courses, link=link, log=log, t_name=t_name, courses=courses)
+        msg = ""
+        if course_details == []:
+            msg = "No courses has been associated"
+        return render_template("teacher.html", teacher_id=session["id"], msg=msg, grades_courses=grades_courses, link=link, log=log, t_name=t_name, courses=courses)
     elif request.method == 'POST':
         grade = request.form['grade']
         s_name = request.form['s_name']
