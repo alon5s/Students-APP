@@ -51,8 +51,7 @@ def create_tables():
             id INTEGER PRIMARY KEY,
             email TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
-            role TEXT NOT NULL,
-            FOREIGN KEY (email) REFERENCES students (email)
+            role TEXT NOT NULL
         )
     """)
     execute_query("""
@@ -79,7 +78,7 @@ def create_fake_data(students_num=40, teachers_num=4):
     fake = faker.Faker()
     default_password = 12345678
     i = 0
-    execute_query(f"INSERT INTO messages (message) VALUES ('SMILE! Life is GOOOD')")
+    execute_query("INSERT INTO messages (message) VALUES ('SMILE! Life is GOOOD')")
     for student in range(students_num):
         i += 1
         execute_query(f"""INSERT INTO students_courses (student_id,course_id,grade) VALUES ({i},{random.randint(1,4)},{random.randint(55,100)})""")

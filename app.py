@@ -23,18 +23,29 @@ def auth():
             return abort(403)
         if "students" in request.full_path:
             return abort(403)
-        if "attendance" in request.full_path:
-            return abort(403)
     if session["role"] == 'Guest':
         if "profile" in request.full_path:
             return abort(403)
-
+        if "teacher/" in request.full_path:
+            return abort(403)
+        if "attendance" in request.full_path:
+            return abort(403)
+    if session["role"] == 'student':
+        if "teachers" in request.full_path:
+            return abort(403)
+        if "teacher/" in request.full_path:
+            return abort(403)
+        if "attendance" in request.full_path:
+            return abort(403)
+    if session["role"] == 'teacher':
+        if "profile/" in request.full_path:
+            return abort(403)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     courses = [(c_name[0], c_name[1]) for c_name in execute_query("SELECT id,name FROM courses")]
     str, link, log = navbar_auth()
-    return render_template("home.html", courses=courses, str=str, link=link, log=log)
+    return render_template("home.html", teacher_id=session["id"], student_id=session["id"], courses=courses, str=str, link=link, log=log)
 
 
 @app.route('/message')
@@ -43,17 +54,21 @@ def message():
     messages = []
     for s in string:
         messages.append(s[1])
-    return messages
+    return messages[-1:]
 
 
 def navbar_auth():
     if session["role"] != 'Guest':
         if session["role"] == 'admin':
-            str = f'Logged in as: {session["role"]}'
+            str = f'Logged in as {session["role"].title()}'
             log = "Logout"
             link = "/logout"
         elif session["role"] == 'student':
-            str = f'Logged in as: {session["email"]}'
+            str = f'Logged in as {session["name"]}'
+            log = "Logout"
+            link = "/logout"
+        elif session["role"] == 'teacher':
+            str = f'Logged in as {session["name"]}'
             log = "Logout"
             link = "/logout"
     else:
@@ -76,10 +91,24 @@ def login():
     if request.method == 'POST':
         role = authenticate(request.form["email"], request.form["password"])
         if role is None:
-            return abort(403)
+            return """<h1>Email/Password is incorrect</h1>"""
         else:
             session["role"] = role
             session["email"] = request.form["email"]
+            if session["role"] == 'admin':
+                session["id"] = 0
+            if session["role"] == 'student':
+                db_student = crud.read_where("id,name", "students", "email", f"""'{session["email"]}'""")
+                for id, name in db_student:
+                    student = Student(id, name)
+                session["id"] = student.id
+                session["name"] = student.name
+            elif session["role"] == 'teacher':
+                db_teacher = crud.read_where("id,name", "teachers", "email", f"""'{session["email"]}'""")
+                for id, name in db_teacher:
+                    teacher = Teacher(id, name)
+                session["id"] = teacher.id
+                session["name"] = teacher.name
         return redirect(url_for("home"))
     return render_template("login.html")
 
@@ -94,6 +123,8 @@ def logout():
 def admin():
     if request.method == 'POST':
         message = request.form["message"]
+        execute_query(f"INSERT INTO messages (message) VALUES ('{message}')")
+        return redirect(url_for("admin"))
     else:
         str, link, log = navbar_auth()
         return render_template("admin.html", link=link, log=log)
@@ -320,9 +351,9 @@ def update(student_id):
         phone = request.form["phone"]
         password = request.form["password"]
         if (email != '') or (phone != '') or (password != ''):
-            execute_query(f"UPDATE students SET email='{email}',phone='{phone}' WHERE id={student_id}")
             db_email = execute_query(f"SELECT email FROM students WHERE id={student_id}")
-            execute_query(f"UPDATE users SET password='{password}' WHERE email='{db_email[0][0]}'")
+            execute_query(f"UPDATE students SET email='{email}', phone='{phone}' WHERE id={student_id}")
+            execute_query(f"UPDATE users SET email='{email}', password='{password}' WHERE email='{db_email[0][0]}'")
         return redirect(url_for("profile", student_id=student_id))
     else:
         return render_template("update.html", link=link, log=log, student_id=student_id)

@@ -13,4 +13,4 @@ function getData() {
 
 
 getData();
-setInterval(getData, 1000);
+setInterval(getData, 5000);
