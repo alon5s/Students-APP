@@ -11,6 +11,7 @@ from collections import namedtuple
 app = Flask(__name__)
 app.secret_key = os.urandom(32)
 
+
 @app.before_request
 def auth():
     if "role" not in session.keys():
@@ -52,11 +53,15 @@ def home():
 
 @app.route('/message')
 def message():
+    # i = 1
+    # for i in range(5):
+    #     string = crud.read_where("message", "messages", "id", f"{i}")
+    #     return string
     string = crud.read("messages")
     messages = []
     for s in string:
         messages.append(s[1])
-    return messages[-1:]
+    return messages[-3:]
 
 
 def navbar_auth():
