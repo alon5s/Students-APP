@@ -1,10 +1,10 @@
-function Div(props) {
+function Messages(props) {
 
-    const [news, setNews] = React.useState(["Welcome!"]);
+    const [message, setMessage] = React.useState(["Welcome!"]);
 
     const getData = () => {
         axios.get("/message").then(response => {
-            setNews(response.data);
+            setMessage(response.data);
         })
     }
 
@@ -15,7 +15,7 @@ function Div(props) {
 
     return (
         <div>
-            {news.map((item) =>
+            {message.map((item) =>
                 <h3>{item}</h3>
             )}
         </div>
@@ -24,4 +24,4 @@ function Div(props) {
 
 // בונוס: הרשימה תהיה מוגבלת ל 5 הודעות, כשנכנסת הודעה חדשה היא מופיעה ראשונה והאחרונה נעלמת.
 
-ReactDOM.render(<Div interval={3000} />, document.getElementById("message"));
+ReactDOM.render(<Messages interval={3000} />, document.getElementById("message"));
