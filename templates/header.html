@@ -19,8 +19,8 @@
         <a href="/">Home</a>
         <a href="/profile/{{student_id}}">Profile</a>
         <a href="/teacher/{{teacher_id}}">Teacher</a>
-        <a href="/admin">Admin</a>
-        <a href="{{ link }}" class="logout">{{ log }}</a>
+        <a href="{{ auth.admin_link }}">{{ auth.admin_str }}</a>
+        <a href="{{ auth.link }}" class="logout">{{ auth.log }}</a>
         <a>
             <form class="search" action="/results" method="get">
                 <input class="fill-press" type="search" placeholder="Search.." name="search">

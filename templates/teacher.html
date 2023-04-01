@@ -2,6 +2,9 @@
 {% block content %}
 <h1 class="headline">Welcome {{ t_name[0][0] }}</h1>
 <h2>{{msg}}</h2>
+{% for course in courses %}
+<h3><a href="/attendance/{{course.id}}">Attendance-{{course.name}}</a></h3>
+{% endfor %}
 {% for course_name in grades_courses %}
 <h3 class="headline">Course {{course_name.title()}}:</h3>
 {% for grade in grades_courses[course_name] %}

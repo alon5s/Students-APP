@@ -9,7 +9,7 @@ from classes import Student, Course, Teacher, User, Grade
 from collections import namedtuple
 
 app = Flask(__name__)
-app.secret_key = os.urandom(32)
+app.secret_key = os.urandom(12)
 
 
 @app.before_request
@@ -47,8 +47,8 @@ def auth():
 @app.route('/', methods=['GET', 'POST'])
 def home():
     courses = [(c_name[0], c_name[1]) for c_name in execute_query("SELECT id,name FROM courses")]
-    str, link, log = navbar_auth()
-    return render_template("home.html", teacher_id=session["id"], student_id=session["id"], courses=courses, str=str, link=link, log=log)
+    auth = navbar_auth()
+    return render_template("home.html", teacher_id=session["id"], student_id=session["id"], courses=courses, auth=auth)
 
 
 @app.route('/message')
@@ -65,24 +65,33 @@ def message():
 
 
 def navbar_auth():
-    if session["role"] != 'Guest':
-        if session["role"] == 'admin':
-            str = f'Logged in as {session["role"].title()}'
-            log = "Logout"
-            link = "/logout"
-        elif session["role"] == 'student':
-            str = f'Logged in as {session["name"]}'
-            log = "Logout"
-            link = "/logout"
-        elif session["role"] == 'teacher':
-            str = f'Logged in as {session["name"]}'
-            log = "Logout"
-            link = "/logout"
+    auth = {}
+    if session["role"] == 'Guest':
+        auth["str"] = f'Welcome {session["role"]}'
+        auth["log"] = "Login"
+        auth["link"] = "/login"
+        auth["admin_str"] = ''
+        auth["admin_link"] = ''
     else:
-        str = f'Welcome {session["role"]}'
-        log = "Login"
-        link = "/login"
-    return str, link, log
+        if session["role"] == 'admin':
+            auth["str"] = f'Logged in as {session["role"].title()}'
+            auth["log"] = "Logout"
+            auth["link"] = "/logout"
+            auth["admin_str"] = 'Administrator'
+            auth["admin_link"] = '/admin'
+        elif session["role"] == 'student':
+            auth["str"] = f'Logged in as {session["name"]}'
+            auth["log"] = "Logout"
+            auth["link"] = "/logout"
+            auth["admin_str"] = ''
+            auth["admin_link"] = ''
+        elif session["role"] == 'teacher':
+            auth["str"] = f'Logged in as {session["name"]}'
+            auth["log"] = "Logout"
+            auth["link"] = "/logout"
+            auth["admin_str"] = ''
+            auth["admin_link"] = ''
+    return auth
 
 
 def authenticate(email, password):
@@ -95,6 +104,7 @@ def authenticate(email, password):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    auth = {}
     if request.method == 'POST':
         role = authenticate(request.form["email"], request.form["password"])
         if role is None:
@@ -103,7 +113,7 @@ def login():
             session["role"] = role
             session["email"] = request.form["email"]
             if session["role"] == 'admin':
-                session["id"] = 0
+                return redirect(url_for("admin"))
             if session["role"] == 'student':
                 db_student = crud.read_where("id,name", "students", "email", f"""'{session["email"]}'""")
                 for id, name in db_student:
@@ -116,8 +126,9 @@ def login():
                     teacher = Teacher(id, name)
                 session["id"] = teacher.id
                 session["name"] = teacher.name
+                return redirect(url_for("teacher_profile", teacher_id=session["id"]))
         return redirect(url_for("home"))
-    return render_template("login.html")
+    return render_template("login.html", auth=auth)
 
 
 @app.route('/logout')
@@ -133,32 +144,33 @@ def admin():
         execute_query(f"INSERT INTO messages (message) VALUES ('{message}')")
         return redirect(url_for("admin"))
     else:
-        str, link, log = navbar_auth()
-        return render_template("admin.html", link=link, log=log)
+        auth = navbar_auth()
+        return render_template("admin.html", auth=auth)
 
 
 @app.route('/attendance', methods=['GET', 'POST'])
 def attendance():
     if request.method == 'GET':
-        str, link, log = navbar_auth()
+        auth = navbar_auth()
         db_courses = crud.read("courses")
         courses = []
         for id, name, desc, t_id in db_courses:
             course = Course(id, name, desc, t_id)
             courses.append(course)
-        return render_template("attendance.html", link=link, log=log, courses=courses)
+        return render_template("attendance.html", auth=auth, courses=courses)
 
 
 @app.route('/attendance/<c_id>', methods=['GET', 'POST'])
 def course_attendance(c_id):
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
+    teacher_id = session["id"]
     c_name = execute_query(f"SELECT name FROM courses WHERE id={c_id}")
     c_name = c_name[0][0].title()
     today_date = datetime.date.today()
     if request.method == 'GET':
         students_ids = crud.read_where('student_id', 'students_courses', 'course_id', c_id)
         if len(students_ids) == 0:
-            return render_template("c_attendance.html", link=link, log=log, today_date=today_date, c_name=c_name, c_id=c_id)
+            return render_template("c_attendance.html", teacher_id=teacher_id, auth=auth, today_date=today_date, c_name=c_name, c_id=c_id)
         else:
             answer_attend = crud.read_whereX2('date', 'attendances', 'course_id', c_id, 'date', f"'{today_date}'")
             if len(answer_attend) == 0:
@@ -170,7 +182,7 @@ def course_attendance(c_id):
                     student.name = crud.student_name(s[0])
                     student.id = s[0]
                     students_names_ids.append(student)
-                return render_template("c_attendance.html", link=link, log=log, c_id=c_id, c_name=c_name, today_date=today_date, students=students_names_ids)
+                return render_template("c_attendance.html", teacher_id=teacher_id, auth=auth, c_id=c_id, c_name=c_name, today_date=today_date, students=students_names_ids)
             else:
                 students_ids_attend = crud.read_whereX2('student_id', 'attendances', 'course_id', c_id, 'date', f"'{today_date}'")
                 if len(students_ids) == len(students_ids_attend):
@@ -195,22 +207,22 @@ def course_attendance(c_id):
                         student_a.attend['yes'] = ''
                         student_a.attend['no'] = 'checked'
                     students_attend.append(student_a)
-        return render_template('c_attendance.html', link=link, log=log, today_date=today_date, c_name=c_name, c_id=c_id, students_attend=students_attend)
+        return render_template('c_attendance.html', teacher_id=teacher_id, auth=auth, today_date=today_date, c_name=c_name, c_id=c_id, students_attend=students_attend)
     if request.method == 'POST':
         answer = request.form["attendance"]
         student_id = request.form["s_id"]
         crud.update_attend(f"'{answer}'", student_id, c_id, f"'{today_date}'")
-        return redirect(url_for('course_attendance', c_id=c_id))
+        return redirect(url_for('course_attendance', teacher_id=teacher_id, c_id=c_id))
 
 
 @app.route('/h_att/<c_id>', methods=['GET', 'POST'])
 def h_att(c_id):
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
     date = request.args["date"]
     db_attendances = crud.read_whereX2("student_id, attendance", "attendances", "course_id", c_id, "date", f"'{date}'")
     if len(db_attendances) == 0:
         note = "Attendance hasn't been filled in this date"
-        return render_template("h_att.html", date=date, link=link, log=log, note=note)
+        return render_template("h_att.html", date=date, auth=auth, note=note)
     else:
         h1 = "Name"
         h2 = "Attendance"
@@ -221,12 +233,12 @@ def h_att(c_id):
             student.name = crud.student_name(student_id)
             student.att = attendance
             students.append(student)
-        return render_template("h_att.html", students=students, date=date, link=link, log=log, h1=h1, h2=h2)
+        return render_template("h_att.html", students=students, date=date, auth=auth, h1=h1, h2=h2)
 
 
 @app.route('/students', methods=['GET', 'POST'])
 def students():
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
     students = execute_query("SELECT * FROM students")
     if request.method == 'POST':
         # FORM1 : ADD STUDENT
@@ -256,12 +268,12 @@ def students():
                 return redirect(url_for('students'))
             except IntegrityError:
                 return abort(422)
-    return render_template("students.html", students=students, link=link, log=log)
+    return render_template("students.html", students=students, auth=auth)
 
 
 @app.route('/courses', methods=['GET', 'POST'])
 def courses():
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
     if request.method == 'POST':
         # first section: adding course
         add_course_name = request.form['course']
@@ -276,12 +288,12 @@ def courses():
     else:
         teachers = [t[0] for t in execute_query("SELECT name FROM teachers")]
         courses = execute_query("SELECT * FROM courses")
-        return render_template("courses.html", courses=courses, teachers=teachers, link=link, log=log)
+        return render_template("courses.html", courses=courses, teachers=teachers, auth=auth)
 
 
 @app.route('/course/<course_id>')
 def show_course(course_id):
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
     c_name = [c_id[0] for c_id in execute_query(
         f"SELECT name FROM courses WHERE id={course_id}")]
     teacher_id = [t_id[0] for t_id in execute_query(
@@ -293,32 +305,32 @@ def show_course(course_id):
         f"SELECT student_id FROM students_courses WHERE course_id={course_id}")]
     students = [[(student[0], student[1]) for student in execute_query(
         f"SELECT id, name FROM students WHERE id={student_id}")] for student_id in student_ids]
-    return render_template("course.html", teacher_details=teacher_details, c_name=c_name, message=message, students=students, link=link, log=log)
+    return render_template("course.html", teacher_details=teacher_details, c_name=c_name, message=message, students=students, auth=auth)
 
 
 @app.route('/profile/<int:student_id>')
 def profile(student_id):
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
     course_ids = execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
     clean_ids = [c[0] for c in course_ids]
     course_names = []
     for i in clean_ids:
         course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
     student_details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
-    return render_template("profile.html", student_details=student_details, course_names=course_names, link=link, log=log, student_id=student_id)
+    return render_template("profile.html", student_details=student_details, course_names=course_names, auth=auth, student_id=student_id)
 
 
 @app.route('/teachers')
 def teachers():
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
     teachers = execute_query("SELECT * FROM teachers")
-    return render_template("teachers.html", link=link, log=log, teachers=teachers)
+    return render_template("teachers.html", auth=auth, teachers=teachers)
 
 
-@app.route('/teacher/<teacher_id>', methods=['GET', 'POST'])
+@app.route('/teacher/<int:teacher_id>', methods=['GET', 'POST'])
 def teacher_profile(teacher_id):
     if request.method == 'GET':
-        str, link, log = navbar_auth()
+        auth = navbar_auth()
         t_name = crud.teacher_name(teacher_id)
         course_details = crud.read_where("id,name", "courses", "teacher_id", teacher_id)
         courses = []
@@ -332,7 +344,7 @@ def teacher_profile(teacher_id):
         msg = ""
         if course_details == []:
             msg = "No courses has been associated"
-        return render_template("teacher.html", teacher_id=session["id"], msg=msg, grades_courses=grades_courses, link=link, log=log, t_name=t_name, courses=courses)
+        return render_template("teacher.html", teacher_id=session["id"], msg=msg, grades_courses=grades_courses, auth=auth, t_name=t_name, courses=courses)
     elif request.method == 'POST':
         grade = request.form['grade']
         s_name = request.form['s_name']
@@ -355,7 +367,7 @@ def get_grades(course_id):
 
 @app.route('/update/<int:student_id>', methods=['GET', 'POST'])
 def update(student_id):
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
     if request.method == 'POST':
         email = request.form["email"]
         phone = request.form["phone"]
@@ -366,12 +378,12 @@ def update(student_id):
             execute_query(f"UPDATE users SET email='{email}', password='{password}' WHERE email='{db_email[0][0]}'")
         return redirect(url_for("profile", student_id=student_id))
     else:
-        return render_template("update.html", link=link, log=log, student_id=student_id)
+        return render_template("update.html", auth=auth, student_id=student_id)
 
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
-    str, link, log = navbar_auth()
+    auth = navbar_auth()
     search = request.args['search']
     c_check = request.args.get('c')
     s_check = request.args.get('s')
@@ -401,7 +413,7 @@ def results():
             for id, name, email in db_teachers:
                 teacher = Teacher(id, name, email)
                 teachers.append(teacher)
-            return render_template("results.html", t_note=t_note, s_note=s_note, c_note=c_note, courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, link=link, log=log)
+            return render_template("results.html", t_note=t_note, s_note=s_note, c_note=c_note, courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, auth=auth)
         if c_check == 'c':
             db_courses = crud.read_by_like("*", "courses", "name", search)
             courses = []
@@ -429,4 +441,4 @@ def results():
         else:
             t_note = ""
             teachers = []
-        return render_template("results.html", t_note=t_note, s_note=s_note, c_note=c_note, courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, link=link, log=log)
+        return render_template("results.html", t_note=t_note, s_note=s_note, c_note=c_note, courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, auth=auth)
