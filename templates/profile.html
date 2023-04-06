@@ -18,10 +18,9 @@
 </div>
 <div class="c_names">
     <h3 class="profile-headlines">My courses:</h3>
-
-    {% for course in course_names %}
-    {% for g in g_list %}
-    {{ course[0][0] }}{{ g }}<br>
+    {% for course_name in grades_students %}
+    {% for grade in grades_students[course_name] %}
+           {{ grade.name.title() }} Grade({{grade.grade}})<br>
     {% endfor %}
     {% endfor %}
 </div>

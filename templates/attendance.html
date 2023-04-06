@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% include 'second_navbar.html' %}
 <h1 class="headline">Attendance:</h1>
 {% for course in courses %}
 <a class="headline" href="/attendance/{{course.id}}">{{ course.name }}</a>

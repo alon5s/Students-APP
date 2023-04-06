@@ -1,31 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
+{% include 'second_navbar.html' %}
 <br><br>
-<div class="courses">
-    <h1 class="headline">Courses:</h1>
-    {% for course in courses %}
-    <div class="course">
-        <a class="course_style" href="/course/{{course[0]}}">{{ course[1] }}</a>
-        <br><br>
-        {% endfor %}
-    </div>
-</div>
-<form class="fieldset-form1" action="" method="post">
-    <fieldset>
-        <legend>Add Course:</legend>
-        <br>
-        <input class="fill-press" type="text" placeholder="Course Name.." name="course">
-        <br><br>
-        <select class="fill-press" name="teacher">
-            <option>Choose A Teacher..</option>
-            {% for teacher in teachers %}
-            <option value="{{ teacher }}">{{ teacher }}</option>
+<div class="container">
+    <div class="courses">
+        <h1 class="headline">Courses:</h1>
+        {% for course in courses %}
+        <div class="course">
+            <a class="course_style" href="/course/{{course[0]}}">{{ course[1] }}</a>
+            <br><br>
             {% endfor %}
-        </select>
-        <br><br>
-        <input class="fill-press" type="text" placeholder="Course Description.." name="desc_">
-        <br><br>
-        <button class="fill-press" type="submit">Submit</button>
-    </fieldset>
-</form>
+        </div>
+    </div>
+    <form class="fieldset-form1" action="" method="post">
+        <fieldset>
+            <legend>Add Course:</legend>
+            <br>
+            <input class="fill-press" type="text" placeholder="Course Name.." name="course">
+            <br><br>
+            <select class="fill-press" name="teacher">
+                <option>Choose A Teacher..</option>
+                {% for teacher in teachers %}
+                <option value="{{ teacher }}">{{ teacher }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <input class="fill-press" type="text" placeholder="Course Description.." name="desc_">
+            <br><br>
+            <button class="fill-press" type="submit">Submit</button>
+        </fieldset>
+    </form>
+</div>
 {% endblock %}

@@ -102,6 +102,13 @@ fieldset {
     width: max-content;
 }
 
+.students {
+    text-align: center;
+    background-color: rgb(39, 39, 39);
+    border-radius: 10px;
+    padding: 10px;
+}
+
 .course {
     font-size: 3vh;
 }
@@ -200,12 +207,7 @@ fieldset {
     color: white;
 }
 
-.students {
-    text-align: center;
-    background-color: rgb(39, 39, 39);
-    border-radius: 10px;
-    padding: 10px;
-}
+
 
 .headline {
     text-decoration: underline;

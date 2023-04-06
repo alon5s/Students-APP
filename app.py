@@ -321,18 +321,15 @@ def profile(student_id):
         course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
     student_details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
     g_list = []
-    grades = crud.read_where("grade", "students_courses", "student_id", student_id) 
+    grades = crud.read_where("grade", "students_courses", "student_id", student_id)
     for g in grades:
         g_list.append(g[0])
     average = statistics.mean(g_list)
-    grades_courses_list = [{"course","grade"}]
-    for name in course_names:
-        grades_courses["course"] = name[0][0]
-        grades_courses_list.append(grades_courses)
-    for g in g_list:
-        grades_courses["grade"] = g 
-        grades_courses_list.append(grades_courses)
-    return render_template("profile.html", g_list=g_list, average=average, student_details=student_details, course_names=course_names, auth=auth, student_id=student_id)
+    for detail in student_details:
+        name = detail[1]
+    grades_students = {}
+    grades_students[name] = get_grades_s(student_id)
+    return render_template("profile.html", g_list=g_list, grades_students=grades_students, average=average, student_details=student_details, course_names=course_names, auth=auth, student_id=student_id)
 
 
 @app.route('/teachers')
@@ -377,6 +374,11 @@ def get_course(course_id):
 
 def get_grades(course_id):
     grades = execute_query(f"SELECT students.name, students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}")
+    return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
+
+
+def get_grades_s(student_id):
+    grades = execute_query(f"SELECT courses.name, students_courses.grade FROM courses JOIN students_courses ON courses.id=students_courses.course_id WHERE students_courses.student_id={student_id}")
     return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
 
 
