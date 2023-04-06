@@ -74,6 +74,8 @@ def navbar_auth():
         auth["link"] = "/login"
         auth["admin_str"] = ''
         auth["admin_link"] = ''
+        auth["profile"] = ''
+        auth["teacher"] = ''
     else:
         if session["role"] == 'admin':
             auth["str"] = f'Logged in as {session["role"].title()}'
@@ -81,18 +83,24 @@ def navbar_auth():
             auth["link"] = "/logout"
             auth["admin_str"] = 'Administrator'
             auth["admin_link"] = '/admin'
+            auth["profile"] = ''
+            auth["teacher"] = ''
         elif session["role"] == 'student':
             auth["str"] = f'Logged in as {session["name"]}'
             auth["log"] = "Logout"
             auth["link"] = "/logout"
             auth["admin_str"] = ''
             auth["admin_link"] = ''
+            auth["profile"] = 'Profile'
+            auth["teacher"] = ''
         elif session["role"] == 'teacher':
             auth["str"] = f'Logged in as {session["name"]}'
             auth["log"] = "Logout"
             auth["link"] = "/logout"
             auth["admin_str"] = ''
             auth["admin_link"] = ''
+            auth["profile"] = ''
+            auth["teacher"] = 'Teacher'
     return auth
 
 
