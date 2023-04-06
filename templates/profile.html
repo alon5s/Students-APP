@@ -12,15 +12,17 @@
     {{ detail[2] }}
     <h3 class="profile-headlines">Phone:</h3>
     {{ detail[3] }}
-    <h3 class="profile-headlines">Grade(avg):</h3>
-    {{ detail[4] }}
     {% endfor %}
+    <h3 class="profile-headlines">Grade(avg):</h3>
+    {{ average }}
 </div>
 <div class="c_names">
-    <h3 class="profile-headlines">Courses:</h3>
+    <h3 class="profile-headlines">My courses:</h3>
+
     {% for course in course_names %}
-    {{ course[0][0] }}
-    <br>
+    {% for g in g_list %}
+    {{ course[0][0] }}{{ g }}<br>
+    {% endfor %}
     {% endfor %}
 </div>
 {% endblock content %}

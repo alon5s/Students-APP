@@ -1,3 +1,4 @@
+import statistics
 import json
 import os
 import crud
@@ -7,6 +8,7 @@ from setup_db import execute_query
 from sqlite3 import IntegrityError
 from classes import Student, Course, Teacher, User, Grade
 from collections import namedtuple
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(12)
@@ -120,6 +122,7 @@ def login():
                     student = Student(id, name)
                 session["id"] = student.id
                 session["name"] = student.name
+                return redirect(url_for("profile", student_id=session["id"]))
             elif session["role"] == 'teacher':
                 db_teacher = crud.read_where("id,name", "teachers", "email", f"""'{session["email"]}'""")
                 for id, name in db_teacher:
@@ -317,7 +320,19 @@ def profile(student_id):
     for i in clean_ids:
         course_names.append(execute_query(f"SELECT name FROM courses WHERE id={i}"))
     student_details = execute_query(f"SELECT * FROM students WHERE id={student_id}")
-    return render_template("profile.html", student_details=student_details, course_names=course_names, auth=auth, student_id=student_id)
+    g_list = []
+    grades = crud.read_where("grade", "students_courses", "student_id", student_id) 
+    for g in grades:
+        g_list.append(g[0])
+    average = statistics.mean(g_list)
+    grades_courses_list = [{"course","grade"}]
+    for name in course_names:
+        grades_courses["course"] = name[0][0]
+        grades_courses_list.append(grades_courses)
+    for g in g_list:
+        grades_courses["grade"] = g 
+        grades_courses_list.append(grades_courses)
+    return render_template("profile.html", g_list=g_list, average=average, student_details=student_details, course_names=course_names, auth=auth, student_id=student_id)
 
 
 @app.route('/teachers')
