@@ -46,24 +46,52 @@ def auth():
             return abort(403)
 
 
+new_message_counter = 0
+messages = []
+string = crud.read("messages")
+for s in string:
+    messages.append(s[1])
+
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     courses = [(c_name[0], c_name[1]) for c_name in execute_query("SELECT id,name FROM courses")]
     auth = navbar_auth()
+    session["prev_messages"] = len(messages)
     return render_template("home.html", teacher_id=session["id"], student_id=session["id"], courses=courses, auth=auth)
 
 
-@app.route('/message')
-def message():
-    # i = 1
-    # for i in range(5):
-    #     string = crud.read_where("message", "messages", "id", f"{i}")
-    #     return string
-    string = crud.read("messages")
-    messages = []
+@app.route('/updates')
+def updates():
+    string = crud.read("updates")
+    updates = []
     for s in string:
-        messages.append(s[1])
-    return messages[-3:]
+        updates.append(s[1])
+    return updates[-3:]
+
+
+@app.route('/num')
+def num():
+    return str(len(messages))
+
+
+@app.route('/messages')
+def get_messages():
+    session["prev_messages"] = len(messages)
+    return {"messages": messages, "len": len(messages)}
+
+
+@app.route('/new_message_counter')
+def counter():
+    session["new_messages"] = len(messages) - session["prev_messages"]
+    return str(session["new_messages"])
+
+
+@app.route('/add', methods=['POST'])
+def add():
+    messages.append(request.json['message'])
+    execute_query(f"INSERT INTO messages (message) VALUES ('{request.json['message']}')")
+    return "message added"
 
 
 def navbar_auth():
@@ -151,8 +179,8 @@ def logout():
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if request.method == 'POST':
-        message = request.form["message"]
-        execute_query(f"INSERT INTO messages (message) VALUES ('{message}')")
+        update = request.form["update"]
+        execute_query(f"INSERT INTO updates (message) VALUES ('{update}')")
         return redirect(url_for("admin"))
     else:
         auth = navbar_auth()
@@ -337,6 +365,10 @@ def profile(student_id):
         name = detail[1]
     grades_students = {}
     grades_students[name] = get_grades_s(student_id)
+    if 'counter' not in session:
+        session['counter'] = 0
+    if 'showed_msg' not in session:
+        session["showed_msg"] = len(messages)
     return render_template("profile.html", g_list=g_list, grades_students=grades_students, average=average, student_details=student_details, course_names=course_names, auth=auth, student_id=student_id)
 
 
@@ -467,3 +499,7 @@ def results():
             t_note = ""
             teachers = []
         return render_template("results.html", t_note=t_note, s_note=s_note, c_note=c_note, courses=courses, students=students, teachers=teachers, result=result, div=div, div_=div_, auth=auth)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
