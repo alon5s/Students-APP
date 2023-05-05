@@ -1,3 +1,4 @@
+import setup_db
 import statistics
 import json
 import os

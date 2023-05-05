@@ -12,3 +12,4 @@ Relationships:
 Course - Students : Many to Many
 
 Teachers - Courses : One to Many
+
