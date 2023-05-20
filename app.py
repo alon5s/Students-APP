@@ -29,21 +29,21 @@ def auth():
         if "students" in request.full_path:
             return abort(403)
     if session["role"] == 'Guest':
-        if "profile" in request.full_path:
+        if "sprofile" in request.full_path:
             return abort(403)
-        if "teacher/" in request.full_path:
+        if "steacher/" in request.full_path:
             return abort(403)
         if "attendance" in request.full_path:
             return abort(403)
     if session["role"] == 'student':
         if "teachers" in request.full_path:
             return abort(403)
-        if "teacher/" in request.full_path:
+        if "steacher/" in request.full_path:
             return abort(403)
         if "attendance" in request.full_path:
             return abort(403)
     if session["role"] == 'teacher':
-        if "profile/" in request.full_path:
+        if "sprofile/" in request.full_path:
             return abort(403)
 
 
@@ -161,14 +161,14 @@ def login():
                     student = Student(id, name)
                 session["id"] = student.id
                 session["name"] = student.name
-                return redirect(url_for("profile", student_id=session["id"]))
+                return redirect(url_for("s_profile", student_id=session["id"]))
             elif session["role"] == 'teacher':
                 db_teacher = crud.read_where("id,name", "teachers", "email", f"""'{session["email"]}'""")
                 for id, name in db_teacher:
                     teacher = Teacher(id, name)
                 session["id"] = teacher.id
                 session["name"] = teacher.name
-                return redirect(url_for("teacher_profile", teacher_id=session["id"]))
+                return redirect(url_for("t_profile", teacher_id=session["id"]))
         return redirect(url_for("home"))
     return render_template("login.html", auth=auth)
 
@@ -350,8 +350,8 @@ def show_course(course_id):
     return render_template("course.html", teacher_details=teacher_details, c_name=c_name, message=message, students=students, auth=auth)
 
 
-@app.route('/profile/<int:student_id>')
-def profile(student_id):
+@app.route('/sprofile/<int:student_id>')
+def s_profile(student_id):
     auth = navbar_auth()
     course_ids = execute_query(f"SELECT course_id FROM students_courses WHERE student_id={student_id}")
     clean_ids = [c[0] for c in course_ids]
@@ -372,57 +372,7 @@ def profile(student_id):
         session['counter'] = 0
     if 'showed_msg' not in session:
         session["showed_msg"] = len(messages)
-    return render_template("profile.html", g_list=g_list, grades_students=grades_students, average=average, student_details=student_details, course_names=course_names, auth=auth, student_id=student_id)
-
-
-@app.route('/teachers')
-def teachers():
-    auth = navbar_auth()
-    teachers = execute_query("SELECT * FROM teachers")
-    return render_template("teachers.html", auth=auth, teachers=teachers)
-
-
-@app.route('/teacher/<int:teacher_id>', methods=['GET', 'POST'])
-def teacher_profile(teacher_id):
-    if request.method == 'GET':
-        auth = navbar_auth()
-        t_name = crud.teacher_name(teacher_id)
-        course_details = crud.read_where("id,name", "courses", "teacher_id", teacher_id)
-        courses = []
-        for id, name in course_details:
-            course = Course(id, name)
-            courses.append(course)
-        grades_courses = {}
-        for course in courses:
-            for course in get_course(course.id):
-                grades_courses[course.name] = get_grades(course.id)
-        msg = ""
-        if course_details == []:
-            msg = "No courses has been associated"
-        return render_template("teacher.html", teacher_id=session["id"], msg=msg, grades_courses=grades_courses, auth=auth, t_name=t_name, courses=courses)
-    elif request.method == 'POST':
-        grade = request.form['grade']
-        s_name = request.form['s_name']
-        c_name = request.form['c_name']
-        s_id = crud.read_where("id", "students", "name", f"'{s_name}'")
-        c_id = crud.read_where("id", "courses", "name", f"'{c_name}'")
-        crud.update_grade(grade, s_id[0][0], c_id[0][0])
-        return redirect(url_for("teacher_profile", teacher_id=teacher_id))
-
-
-def get_course(course_id):
-    courses = execute_query(f"SELECT id, name FROM courses WHERE id={course_id}")
-    return [Course(*course) for course in courses]
-
-
-def get_grades(course_id):
-    grades = execute_query(f"SELECT students.name, students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}")
-    return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
-
-
-def get_grades_s(student_id):
-    grades = execute_query(f"SELECT courses.name, students_courses.grade FROM courses JOIN students_courses ON courses.id=students_courses.course_id WHERE students_courses.student_id={student_id}")
-    return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
+    return render_template("s_profile.html", g_list=g_list, grades_students=grades_students, average=average, student_details=student_details, course_names=course_names, auth=auth, student_id=student_id)
 
 
 @app.route('/update/<int:student_id>', methods=['GET', 'POST'])
@@ -448,6 +398,56 @@ def update(student_id):
         return redirect(url_for("profile", student_id=student_id))
     else:
         return render_template("update.html", auth=auth, student_id=student_id)
+
+
+@app.route('/teachers')
+def teachers():
+    auth = navbar_auth()
+    teachers = execute_query("SELECT * FROM teachers")
+    return render_template("teachers.html", auth=auth, teachers=teachers)
+
+
+@app.route('/tprofile/<int:teacher_id>', methods=['GET', 'POST'])
+def t_profile(teacher_id):
+    if request.method == 'GET':
+        auth = navbar_auth()
+        t_name = crud.teacher_name(teacher_id)
+        course_details = crud.read_where("id,name", "courses", "teacher_id", teacher_id)
+        courses = []
+        for id, name in course_details:
+            course = Course(id, name)
+            courses.append(course)
+        grades_courses = {}
+        for course in courses:
+            for course in get_course(course.id):
+                grades_courses[course.name] = get_grades(course.id)
+        msg = ""
+        if course_details == []:
+            msg = "No courses has been associated"
+        return render_template("t_profile.html", teacher_id=session["id"], msg=msg, grades_courses=grades_courses, auth=auth, t_name=t_name, courses=courses)
+    elif request.method == 'POST':
+        grade = request.form['grade']
+        s_name = request.form['s_name']
+        c_name = request.form['c_name']
+        s_id = crud.read_where("id", "students", "name", f"'{s_name}'")
+        c_id = crud.read_where("id", "courses", "name", f"'{c_name}'")
+        crud.update_grade(grade, s_id[0][0], c_id[0][0])
+        return redirect(url_for("t_profile", teacher_id=teacher_id))
+
+
+def get_course(course_id):
+    courses = execute_query(f"SELECT id, name FROM courses WHERE id={course_id}")
+    return [Course(*course) for course in courses]
+
+
+def get_grades(course_id):
+    grades = execute_query(f"SELECT students.name, students_courses.grade FROM students JOIN students_courses ON students.id=students_courses.student_id WHERE students_courses.course_id={course_id}")
+    return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
+
+
+def get_grades_s(student_id):
+    grades = execute_query(f"SELECT courses.name, students_courses.grade FROM courses JOIN students_courses ON courses.id=students_courses.course_id WHERE students_courses.student_id={student_id}")
+    return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
 
 
 @app.route('/results', methods=['GET', 'POST'])
