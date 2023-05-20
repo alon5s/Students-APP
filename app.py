@@ -59,7 +59,7 @@ def home():
     courses = [(c_name[0], c_name[1]) for c_name in execute_query("SELECT id,name FROM courses")]
     auth = navbar_auth()
     session["prev_messages"] = len(messages)
-    return render_template("home.html", teacher_id=session["id"], student_id=session["id"], courses=courses, auth=auth)
+    return render_template("home.html", courses=courses, auth=auth)
 
 
 @app.route('/updates')
@@ -122,6 +122,7 @@ def navbar_auth():
             auth["admin_link"] = ''
             auth["profile"] = 'Profile'
             auth["teacher"] = ''
+            auth["id"] = session["id"]
         elif session["role"] == 'teacher':
             auth["str"] = f'Logged in as {session["name"]}'
             auth["log"] = "Logout"
@@ -130,6 +131,7 @@ def navbar_auth():
             auth["admin_link"] = ''
             auth["profile"] = ''
             auth["teacher"] = 'Teacher'
+            auth["id"] = session["id"]
     return auth
 
 
@@ -430,8 +432,17 @@ def update(student_id):
         email = request.form["email"]
         phone = request.form["phone"]
         password = request.form["password"]
-        if (email != '') or (phone != '') or (password != ''):
-            db_email = execute_query(f"SELECT email FROM students WHERE id={student_id}")
+        db_email = execute_query(f"SELECT email FROM students WHERE id={student_id}")
+        if (email == '') and (phone == '') and (password == ''):
+            pass
+        elif (email != '') and (phone == '') and (password == ''):
+            execute_query(f"UPDATE students SET email='{email}' WHERE id={student_id}")
+            execute_query(f"UPDATE users SET email='{email}' WHERE id={student_id}")
+        elif (email == '') and (phone != '') and (password == ''):
+            execute_query(f"UPDATE students SET phone='{phone}' WHERE id={student_id}")
+        elif (email == '') and (phone == '') and (password != ''):
+            execute_query(f"UPDATE users SET password='{password}' WHERE id={student_id}")
+        elif (email == '') and (phone == '') and (password == ''):
             execute_query(f"UPDATE students SET email='{email}', phone='{phone}' WHERE id={student_id}")
             execute_query(f"UPDATE users SET email='{email}', password='{password}' WHERE email='{db_email[0][0]}'")
         return redirect(url_for("profile", student_id=student_id))
