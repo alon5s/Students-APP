@@ -84,7 +84,7 @@ def create_fake_data(students_num=40, teachers_num=4):
     fake = faker.Faker()
     default_password = 12345678
     i = 0
-    if sqlite3.connect("students.db"):
+    if execute_query("SELECT * FROM users") != []:
         pass
     else:
         execute_query("INSERT INTO updates (message) VALUES ('SMILE! Life is GOOOD')")
