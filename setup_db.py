@@ -84,7 +84,9 @@ def create_fake_data(students_num=40, teachers_num=4):
     fake = faker.Faker()
     default_password = 12345678
     i = 0
-    if execute_query("SELECT * FROM students") == []:
+    if sqlite3.connect("students.db"):
+        pass
+    else:
         execute_query("INSERT INTO updates (message) VALUES ('SMILE! Life is GOOOD')")
         for student in range(students_num):
             i += 1
@@ -102,8 +104,6 @@ def create_fake_data(students_num=40, teachers_num=4):
             teacher_ids = [tup[0] for tup in execute_query("SELECT id FROM teachers")]
             execute_query(f"INSERT INTO courses (name, teacher_id) VALUES ('{course_name}','{random.choice(teacher_ids)}')")
         execute_query("INSERT INTO users VALUES (NULL,'admin@admin.com','admin','admin')")
-    else:
-        pass
 
 
 create_tables()

@@ -96,15 +96,19 @@ def add():
 
 
 def navbar_auth():
-    auth = {}
+    auth = {
+        "str": "",
+        "log": "",
+        "link": "",
+        "admin_str": "",
+        "admin_link": "",
+        "profile": "",
+        "teacher": "",
+    }
     if session["role"] == 'Guest':
         auth["str"] = f'Welcome {session["role"]}'
         auth["log"] = "Login"
         auth["link"] = "/login"
-        auth["admin_str"] = ''
-        auth["admin_link"] = ''
-        auth["profile"] = ''
-        auth["teacher"] = ''
     else:
         if session["role"] == 'admin':
             auth["str"] = f'Logged in as {session["role"].title()}'
@@ -112,24 +116,16 @@ def navbar_auth():
             auth["link"] = "/logout"
             auth["admin_str"] = 'Administrator'
             auth["admin_link"] = '/admin'
-            auth["profile"] = ''
-            auth["teacher"] = ''
         elif session["role"] == 'student':
             auth["str"] = f'Logged in as {session["name"]}'
             auth["log"] = "Logout"
             auth["link"] = "/logout"
-            auth["admin_str"] = ''
-            auth["admin_link"] = ''
             auth["profile"] = 'Profile'
-            auth["teacher"] = ''
             auth["id"] = session["id"]
         elif session["role"] == 'teacher':
             auth["str"] = f'Logged in as {session["name"]}'
             auth["log"] = "Logout"
             auth["link"] = "/logout"
-            auth["admin_str"] = ''
-            auth["admin_link"] = ''
-            auth["profile"] = ''
             auth["teacher"] = 'Teacher'
             auth["id"] = session["id"]
     return auth
@@ -190,16 +186,15 @@ def admin():
         return render_template("admin.html", auth=auth)
 
 
-@app.route('/attendance', methods=['GET', 'POST'])
+@app.route('/attendance')
 def attendance():
-    if request.method == 'GET':
-        auth = navbar_auth()
-        db_courses = crud.read("courses")
-        courses = []
-        for id, name, desc, t_id in db_courses:
-            course = Course(id, name, desc, t_id)
-            courses.append(course)
-        return render_template("attendance.html", auth=auth, courses=courses)
+    auth = navbar_auth()
+    db_courses = crud.read("courses")
+    courses = []
+    for id, name, desc, t_id in db_courses:
+        course = Course(id, name, desc, t_id)
+        courses.append(course)
+    return render_template("attendance.html", auth=auth, courses=courses)
 
 
 @app.route('/attendance/<c_id>', methods=['GET', 'POST'])
@@ -250,14 +245,14 @@ def course_attendance(c_id):
                         student_a.attend['no'] = 'checked'
                     students_attend.append(student_a)
         return render_template('c_attendance.html', teacher_id=teacher_id, auth=auth, today_date=today_date, c_name=c_name, c_id=c_id, students_attend=students_attend)
-    if request.method == 'POST':
+    else:
         answer = request.form["attendance"]
         student_id = request.form["s_id"]
         crud.update_attend(f"'{answer}'", student_id, c_id, f"'{today_date}'")
         return redirect(url_for('course_attendance', teacher_id=teacher_id, c_id=c_id))
 
 
-@app.route('/h_att/<c_id>', methods=['GET', 'POST'])
+@app.route('/h_att/<c_id>')
 def h_att(c_id):
     auth = navbar_auth()
     date = request.args["date"]
@@ -425,7 +420,7 @@ def t_profile(teacher_id):
         if course_details == []:
             msg = "No courses has been associated"
         return render_template("t_profile.html", teacher_id=session["id"], msg=msg, grades_courses=grades_courses, auth=auth, t_name=t_name, courses=courses)
-    elif request.method == 'POST':
+    else:
         grade = request.form['grade']
         s_name = request.form['s_name']
         c_name = request.form['c_name']
@@ -450,7 +445,7 @@ def get_grades_s(student_id):
     return [Grade(name=grade[0], grade=grade[1]) for grade in grades]
 
 
-@app.route('/results', methods=['GET', 'POST'])
+@app.route('/results')
 def results():
     auth = navbar_auth()
     search = request.args['search']
