@@ -31,19 +31,19 @@ def auth():
     if session["role"] == 'Guest':
         if "sprofile" in request.full_path:
             return abort(403)
-        if "steacher/" in request.full_path:
+        if "tprofile" in request.full_path:
             return abort(403)
         if "attendance" in request.full_path:
             return abort(403)
     if session["role"] == 'student':
         if "teachers" in request.full_path:
             return abort(403)
-        if "steacher/" in request.full_path:
+        if "tprofile" in request.full_path:
             return abort(403)
         if "attendance" in request.full_path:
             return abort(403)
     if session["role"] == 'teacher':
-        if "sprofile/" in request.full_path:
+        if "sprofile" in request.full_path:
             return abort(403)
 
 
