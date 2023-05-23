@@ -42,9 +42,6 @@ def auth():
             return abort(403)
         if "attendance" in request.full_path:
             return abort(403)
-    if session["role"] == 'teacher':
-        if "sprofile" in request.full_path:
-            return abort(403)
 
 
 new_message_counter = 0

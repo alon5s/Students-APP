@@ -12,6 +12,8 @@ def query_db(sql_query):
 def read(table):
     return query_db(f"SELECT * FROM {table}")
 
+def read_by_name(table, name):
+    return query_db(f"SELECT * FROM {table} WHERE name='{name}'")
 
 def teacher_name(id):
     return query_db(f"SELECT name FROM teachers WHERE id={id}")
