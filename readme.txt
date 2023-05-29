@@ -1,25 +1,9 @@
-DB:
+To run the app just press F5 whether you have DB or not 
+It will create the DB if there is no DB
 
-8 tables:
+admin user: admin@admin.com
+admin password: admin
 
-Teachers
-Courses
-Students
-Students_courses
-Users
-Attendances
-Updates
-Messages
-
-Relationships:
-
-Course - Students : Many to Many
-
-Teachers - Courses : One to Many
-
-Users - Students : One to One
-
-Users - Teachers : One to One
-
-Attendances - Students : Many to One
-
+student user: mcohen@gmail.com
+teacher user: ashaul@gmail.com / hnahum@gmail.com
+teacher / student password: 12345678

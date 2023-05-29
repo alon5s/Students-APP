@@ -10,6 +10,7 @@ from sqlite3 import IntegrityError
 from classes import Student, Course, Teacher, User, Grade
 from collections import namedtuple
 
+# PLEASE watch readme.txt
 
 app = Flask(__name__)
 app.secret_key = os.urandom(12)
