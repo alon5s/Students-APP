@@ -32,8 +32,13 @@
     <form class="att_search" action="/h_att/{{c_id}}" method="get">
         Choose A Different Date:
         <br>
-        <input class="fill-press" type="date" name="date">
-        <input class="fill-press" type="submit" value="Watch">
+        <select class="fill-press" name="select">
+            <option>Select a Date:</option>
+            {% for d in dates %}
+            <option value="{{ d[0] }}">{{ d[0] }}</option>
+            {% endfor %}
+        </select>
+        <input class="fill-press" type="submit" value="Select">
     </form>
 </div>
 {% endblock %}

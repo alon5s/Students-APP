@@ -27,6 +27,10 @@ def read_where(values, table, column, value):
     return query_db(f"SELECT {values} FROM {table} WHERE {column}={value}")
 
 
+def read_where_distinct(values, table, column, value):
+    return query_db(f"SELECT DISTINCT {values} FROM {table} WHERE {column}={value}")
+
+
 def read_whereX2(values, table, column0, value0, column1, value1):
     return query_db(f"SELECT {values} FROM {table} WHERE {column0}={value0} AND {column1}={value1}")
 

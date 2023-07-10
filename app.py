@@ -203,6 +203,7 @@ def course_attendance(c_id):
     c_name = c_name[0][0].title()
     today_date = datetime.date.today()
     if request.method == 'GET':
+        dates = crud.read_where_distinct('date', 'attendances', 'course_id', c_id)
         students_ids = crud.read_where('student_id', 'students_courses', 'course_id', c_id)
         if len(students_ids) == 0:
             return render_template("c_attendance.html", teacher_id=teacher_id, auth=auth, today_date=today_date, c_name=c_name, c_id=c_id)
@@ -227,7 +228,7 @@ def course_attendance(c_id):
                         if s_i in students_ids_attend:
                             pass
                         else:
-                            crud.insert('attendances', 'student_id, course_id, date', f"'{s_id[0]}', '{c_id}', '{today_date}'")
+                            crud.insert('attendances', 'student_id, course_id, date', f"'{s_i[0]}', '{c_id}', '{today_date}'")
                 course_attend = crud.read_whereX2('student_id, attendance', 'attendances', 'course_id', c_id, 'date', f"'{today_date}'")
                 students_attend = []
                 for s_a in course_attend:
@@ -242,7 +243,7 @@ def course_attendance(c_id):
                         student_a.attend['yes'] = ''
                         student_a.attend['no'] = 'checked'
                     students_attend.append(student_a)
-        return render_template('c_attendance.html', teacher_id=teacher_id, auth=auth, today_date=today_date, c_name=c_name, c_id=c_id, students_attend=students_attend)
+        return render_template('c_attendance.html', dates=dates, teacher_id=teacher_id, auth=auth, today_date=today_date, c_name=c_name, c_id=c_id, students_attend=students_attend)
     else:
         answer = request.form["attendance"]
         student_id = request.form["s_id"]
@@ -299,7 +300,7 @@ def students():
                 course_details = crud.read_by_name("courses", c_name)
                 for id, name, desc, t_id in course_details:
                     course = Course(id, name, desc, t_id)
-                crud.insert("students_courses", "student_id,course_id,grade", f"'{student.id}', '{course.id}', 'NULL'")
+                crud.insert("students_courses", "student_id,course_id,grade", f"'{student.id}', '{course.id}', '0'")
                 return redirect(url_for('students'))
             except IntegrityError:
                 return abort(422)
